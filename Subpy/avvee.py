@@ -431,39 +431,51 @@ def parameter_read_dict(filename):
 
             
 if __name__ == "__main__":
-    file = sys.argv[1]
+    # file = sys.argv[1]
     arg = []
     # Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(int(J),int(J)+1)]
-    # Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(30,81,50)]
+    Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(1,51,1)]
 
-    # Dstr = [f"Dim{str(i).zfill(3)}" for i in range(101)]
-    # Lstr = [f"L{num}" for num in range(31, 255, 32)]  # 只有 L512
-    # Lstr = [f"L{num}" for num in range(64, 129, 64)]  # 只有 L512
-    a = scriptCreator.para("read",file)
-    parameterlist = a.para
-    para=scriptCreator.paraList1(parameterlist["L"],parameterlist["J"],parameterlist["D"],parameterlist["S"])
-    BC = parameterlist["BC"]
-    Pdis = parameterlist["Pdis"]
-    chi = "m" + str(parameterlist["chi"])
+    Dstr = [f"Dim{str(i).zfill(3)}" for i in range(61)]
+    Lstr = [f"L{num}" for num in range(31, 255, 32)]  # 只有 L512
+    Lstr = [f"L{num}" for num in range(64, 550, 64)]  # 只有 L512
+    # a = scriptCreator.para("read",file)
+    # parameterlist = a.para
+    # para=scriptCreator.paraList1(parameterlist["L"],parameterlist["J"],parameterlist["D"],parameterlist["S"])
+    # BC = parameterlist["BC"]
+    # Pdis = parameterlist["Pdis"]
+    # chi = "m" + str(parameterlist["chi"])
     # s1 = int(parameterlist["S"]["S1"])
     # s2 = int(parameterlist["S"]["S2"])
-    s1 = int(sys.argv[2])
-    s2 = int(sys.argv[3])
+    # s1 = int(sys.argv[2])
+    # s2 = int(sys.argv[3])
+    BC = "PBC"
+    Pdis = 10
+    chi = "m40"
     if BC == "PBC":
         s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
+        s_list = ["ZL"]
     else:
         s_list = ["ZL","corr1","corr2","J_list","energy","dimerization","w_loc","seed"]
         
+    # for s in s_list:
+    #     for L in para.L_str:
+    #         for J in para.J_str:
+    #                 arg.append((BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", s, s1, s2))
+    s1 = 1
+    s2 = 10000  
     for s in s_list:
-        for L in para.L_str:
-            for J in para.J_str:
-                    arg.append((BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", s, s1, s2))
-
-    print(arg)         
-
+        for L in Lstr:
+            for J in Jstr:
+                for D in Dstr:
+                    arg.append((BC, J, D, L, f"P{Pdis}", f"{chi}", s, s1, s2))
+    print(s_list)
+    print(Lstr)
+    print(Jstr)
+    print(Dstr)
     def fun(arg):
         print("---------------------col--------------------\n")
-        with multiprocessing.Pool(processes=10) as pool:
+        with multiprocessing.Pool(processes=30) as pool:
             results1 = pool.starmap(Combine, arg)
         # print("---------------------del--------------------\n")
         # with multiprocessing.Pool(processes=20) as pool:

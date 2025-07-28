@@ -1,0 +1,6 @@
+['ZL']
+['L64', 'L128', 'L192', 'L256', 'L320', 'L384', 'L448', 'L512']
+['Jdis001', 'Jdis002', 'Jdis003', 'Jdis004', 'Jdis005', 'Jdis006', 'Jdis007', 'Jdis008', 'Jdis009', 'Jdis010', 'Jdis011', 'Jdis012', 'Jdis013', 'Jdis014', 'Jdis015', 'Jdis016', 'Jdis017', 'Jdis018', 'Jdis019', 'Jdis020', 'Jdis021', 'Jdis022', 'Jdis023', 'Jdis024', 'Jdis025', 'Jdis026', 'Jdis027', 'Jdis028', 'Jdis029', 'Jdis030', 'Jdis031', 'Jdis032', 'Jdis033', 'Jdis034', 'Jdis035', 'Jdis036', 'Jdis037', 'Jdis038', 'Jdis039', 'Jdis040', 'Jdis041', 'Jdis042', 'Jdis043', 'Jdis044', 'Jdis045', 'Jdis046', 'Jdis047', 'Jdis048', 'Jdis049', 'Jdis050']
+['Dim000', 'Dim001', 'Dim002', 'Dim003', 'Dim004', 'Dim005', 'Dim006', 'Dim007', 'Dim008', 'Dim009', 'Dim010', 'Dim011', 'Dim012', 'Dim013', 'Dim014', 'Dim015', 'Dim016', 'Dim017', 'Dim018', 'Dim019', 'Dim020', 'Dim021', 'Dim022', 'Dim023', 'Dim024', 'Dim025', 'Dim026', 'Dim027', 'Dim028', 'Dim029', 'Dim030', 'Dim031', 'Dim032', 'Dim033', 'Dim034', 'Dim035', 'Dim036', 'Dim037', 'Dim038', 'Dim039', 'Dim040', 'Dim041', 'Dim042', 'Dim043', 'Dim044', 'Dim045', 'Dim046', 'Dim047', 'Dim048', 'Dim049', 'Dim050', 'Dim051', 'Dim052', 'Dim053', 'Dim054', 'Dim055', 'Dim056', 'Dim057', 'Dim058', 'Dim059', 'Dim060']
+---------------------col--------------------
+
