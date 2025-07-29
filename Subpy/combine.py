@@ -67,44 +67,53 @@ def checkInside(s, f, sample, phys):
         return False
 
 
-def compare(f1,f2,sample):
-    with open(f1,"r") as a:
-        a = a.readlines()
-    with open(f2,"r") as b:
-        b = b.readlines()
-    if (len(a) <= 2) and (len(b) <=2 ):
-        return (a == b)
-    elif (len(a) > 2) and (len(b) > 2 ):
-        return (a == b)
-    elif (len(a) <= 2) and (len(b) > 2 ):
-        if len(a) == 2:
-            del a[0]
-            data1 = a[0].strip()
-            # print(data1)
-        else:
-            data1 = a[0].strip()
-            # print(data1)
-        del b[0]
-        
-        for i,v in enumerate(b):
-            # print(v.split(":")[0])
-            # print(v.split(":")[1])
-            if data1 in v.strip():
-                if v.split(":")[0] == sample:
-                    return True
+def compare(f1, f2, sample):
+    # 讀取兩個檔案
+    try:
+        with open(f1, "r") as file1:
+            a = [line.strip() for line in file1 if line.strip()]
+        with open(f2, "r") as file2:
+            b = [line.strip() for line in file2 if line.strip()]
+    except FileNotFoundError:
+        print(f"檔案不存在：{f1} 或 {f2}")
         return False
-    elif (len(a) > 2) and (len(b) < 2 ):
-        if len(b) == 2:
-            del b[0]
-            data1 = b[0].strip()
-        else:
-            data1 = b[0].strip()
-        del a[0]
-        for i,v in enumerate(a):
-            if data1 in v.strip():
-                if v.split(":")[0] == sample:
-                    return True
+
+    # 若有任一檔案為空，直接判定不同
+    if not a or not b:
         return False
+
+    # 兩邊都很短（1-2 行），直接比對整體內容
+    if len(a) <= 2 and len(b) <= 2:
+        return a == b
+
+    # 兩邊都有多行，直接比對整體內容
+    if len(a) > 2 and len(b) > 2:
+        return a == b
+
+    # ---- 以下為不對稱比對情況 ----
+
+    # 把 a 設為短的那一份，b 為長的（方便處理）
+    if len(a) > len(b):
+        a, b = b, a  # swap
+
+    # 若 a 有 2 行，先刪掉標題行
+    if len(a) == 2:
+        data1 = a[1]
+    else:
+        data1 = a[0]
+
+    # 移除 b 的標題行
+    b = b[1:]
+
+    # 在 b 裡搜尋 data1 對應到的 sample 名稱
+    for line in b:
+        if data1 in line:
+            parts = line.split(":")
+            if parts[0] == sample:
+                return True
+
+    return False
+
 def checkFileNum(dirpath):
     folder = Path(dirpath) 
     file_count = sum(1 for f in folder.iterdir() if f.is_file())
@@ -175,36 +184,6 @@ def cp_files(file_list):
         os.system("cp " + f)
     print(f"已複製 {len(file_list)} 個檔案，從{file_list[0]}到{file_list[-1]}")
 
-
-def ZLAverage(BC, J, D, L, P, m, phys):
-    folder = creatDir(BC, J, D, L, P, m, phys)
-    name = creatName(BC, J, D, L, P, m, phys)
-
-
-    myTarPath = folder[2] + "/" + name[2]
-    groupTarPath = folder[3] + "/" + name[3]
-    
-    with open(myTarPath, "a") as targetFile:
-        datalist = targetFile.readlines()
-        datalist = [float(data,split(":")[-1]) for data in datalist]
-        ave = sum(datalist)/len(datalist)
-        error = np.std(datalist, ddof=1)
-    return ave, error
-
-def gapAverage(BC, J, D, L, P, m, phys):
-    folder = creatDir(BC, J, D, L, P, m, phys)
-    name = creatName(BC, J, D, L, P, m, phys)
-
-
-    myTarPath = folder[2] + "/" + name[2]
-    groupTarPath = folder[3] + "/" + name[3]
-    
-    with open(myTarPath, "a") as targetFile:
-        datalist = targetFile.readlines()
-        datalist = [float(data,split(":")[1]).split()[1] - float(data,split(":")[1]).split()[0] for data in datalist]
-        ave = sum(datalist)/len(datalist)
-        error = np.std(datalist, ddof=1)
-    return ave, error
 
 
 def parse_context(context):
@@ -364,34 +343,6 @@ def save_context(context, s1, groupTarPath, myTarPath, phys):
     #         # with open(groupTarPath, "a") as f1, open(myTarPath, "a") as f2:
     #         #     f1.write(context)
     #         #     # f2.write(context)          
-def average(BC, J, D, L, P, m, phys, s1, s2):
-    folder = creatDir(BC, J, D, L, P, m, phys)
-    name = creatName(BC, J, D, L, P, m, phys)
-
-    # mySourcePath = folder[0] + "/" + name[0]
-    # groupSourcePath = folder[1] + "/" + name[1]
-    myTarPath = folder[2] + "/" + name[2]
-    groupTarPath = folder[3] + "/" + name[3]
-    
-    with open(myTarPath,"r") as a:
-        a = a.readlines()
-        if phys in a[0].strip():
-            del a[0]
-        metaContext = {}
-        for s in a:
-            s = s.strip()
-            sNum = int(s[0].split(":")[0])
-            if sNum not in metaContext:
-                metaContext[sNum] = {}
-                
-            del s[0]
-            s = s.replace(" ")
-            del s[0]
-            for corr in s:
-                if int(corr[1]) - int(corr[0]) not in dic:
-                    metaContext[sNum][int(corr[1]) - int(corr[0])] = [float(corr[2])]
-                else:
-                    metaContext[sNum][int(corr[1]) - int(corr[0])].append(float(corr[2]))
 
         
 def parameter_read_dict(filename):

@@ -54,14 +54,14 @@ tarlist = {
 
 metalist = {
     "ZL":"_".join(["ZL","L_re","P_re","m_re","J_re","D_re.txt"]),\
-    "gap":"_".join(["energy","L_re","P_re","m_re","J_re","D_re.txt"]),\
+    "energy":"_".join(["gap","L_re","P_re","m_re","J_re","D_re.txt"]),\
     "corr1":"_".join(["corr1","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
     "corr2":"_".join(["corr2","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
     }
 
 metaDislist = {
     "ZL":"_".join(["ZL_dis","L_re","P_re","m_re","J_re","D_re.txt"]),\
-    "gap":"_".join(["gap_dis","L_re","P_re","m_re","J_re","D_re.txt"]),\
+    "energy":"_".join(["gap_dis","L_re","P_re","m_re","J_re","D_re.txt"]),\
     "corr1":"_".join(["corr1_dis","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
     "corr2":"_".join(["corr2_dis","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
     }
@@ -264,16 +264,30 @@ def ZLAverage(BC, J, D, L, P, m, phys):
     zllist = []
     
     try:
+        if not os.path.exists(myTarPath):
+            raise FileNotFoundError(f"{myTarPath} does not exist")
+        auto_delete_empty = True
+        if os.path.getsize(myTarPath) == 0:
+            if auto_delete_empty:
+                os.remove(myTarPath)
+                print(f"[刪除] 空檔案已刪除：{myTarPath}")
+            raise ValueError("檔案為空")
         with open(myTarPath, "r") as targetFile:
             zllist = targetFile.readlines()
             if type(zllist[0]) == str or zllist[0] == "ZL":
                 del zllist[0]
             zllist = [float(line.split(":")[-1]) for line in zllist]
-
+        if not zllist:
+            if auto_delete_empty:
+                os.remove(myTarPath)
+                print(f"[刪除] 空檔案已刪除：{myTarPath}")
+            raise ValueError("檔案內容為空")
     except FileNotFoundError:
         print(f"File not found: {myTarPath}")
         return False, False, False
-    
+    except ValueError as e:
+        print(f"跳過空檔案: {BC}, {J}, {D}, {L}, {P}, {m}, {phys} → {e}")
+        return False, False, False
     save_zlDistribute(zllist, BC, J, D, L, P, m, phys)
     zlAve = np.mean(zllist)
     sample = len(zllist)

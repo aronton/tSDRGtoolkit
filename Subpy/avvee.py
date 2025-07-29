@@ -434,7 +434,7 @@ if __name__ == "__main__":
     # file = sys.argv[1]
     arg = []
     # Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(int(J),int(J)+1)]
-    Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(1,51,1)]
+    Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(1,201,1)]
 
     Dstr = [f"Dim{str(i).zfill(3)}" for i in range(61)]
     Lstr = [f"L{num}" for num in range(31, 255, 32)]  # 只有 L512
@@ -450,7 +450,7 @@ if __name__ == "__main__":
     # s1 = int(sys.argv[2])
     # s2 = int(sys.argv[3])
     BC = "PBC"
-    Pdis = 10
+    Pdis = 20
     chi = "m40"
     if BC == "PBC":
         s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
