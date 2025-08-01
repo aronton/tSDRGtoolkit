@@ -364,7 +364,7 @@ if __name__ == "__main__":
                     # arg.append((BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", s, s1, s2))
     # 參數設定
     D_i, D_f, D_d = 1, 80, 1
-    J_i, J_f, J_d = 1, 200, 1
+    J_i, J_f, J_d = 60, 61, 1
     L_i, L_f, L_d = 32, 550, 32                    
         
     D_list = [f"Dim{str(i).zfill(3)}" for i in range(D_i, D_f, D_d)]

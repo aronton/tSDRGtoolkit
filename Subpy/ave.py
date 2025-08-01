@@ -76,12 +76,7 @@ def creatName(BC, J, D, L, P, m, phys):
     groupDisName = metaDislist[phys].replace("BC_re", BC).replace("J_re", J).replace("D_re", D).replace("L_re", L).replace("P_re", P).replace("m_re", m)
     return (mySourceName, groupSourceName, myTargetName, groupTargetName, groupAveName, groupDisName)
 
-# def creatCpName(BC, J, D, L, P, m, phys):
-#     CpName = newlist[phys].replace("BC_re", BC).replace("J_re", J).replace("D_re", D).replace("L_re", L).replace("P_re", P).replace("m_re", m) 
-#     return CpName
-# def creatColName(BC, J, D, L, P, m, phys):
-#     colName = collist[phys].replace("BC_re", BC).replace("J_re", J).replace("D_re", D).replace("L_re", L).replace("P_re", P).replace("m_re", m) 
-#     return colName
+
 def creatDir(BC, J, D, L, P, m, phys):
     avePath = "/".join(["tSDRG","Main_15","metadata","BC_re","J_re","D_re","L_re_P_re_m_re_s_re"])
     sourcePath = "/".join(["tSDRG","Main_15","data_random","BC_re","J_re","D_re","L_re_P_re_m_re_s_re"])
@@ -107,11 +102,189 @@ def creatDir(BC, J, D, L, P, m, phys):
     
     return (mySourcePath, groupSourcePath, myTargetPath, groupTargetPath, myAvePath, myDisPath)
 
-def gapAverage(BC, J, D, L, P, m, phys):
+def fread(f, phys):
+    if os.path.exists(f):
+        with open(f,"r") as a:
+            a = a.readlines()
+            if len(a) == 0:
+                return 
+            else:
+                if phys in a[0].strip():
+                    del a[0]
+                a = "".join(a)
+                a = a.replace("\n"," ")
+                return a
+    else:
+        return 
+
+def create_tarball_files(output_filename, file_list):
+    with tarfile.open(output_filename, "w:gz") as tar:
+        for file in file_list:
+            tar.add(file, arcname=file)  # arcname 保持原始檔名
+    print(f"已打包 {len(file_list)} 個檔案到 {output_filename}")
+
+def kill_files(file_list):
+    for i,f in enumerate(file_list):
+        os.system("rm " + f)
+    return f"已刪除 {len(file_list)} 個檔案，從{file_list[0]}到{file_list[-1]}"
+    
+def cp_files(file_list):
+    for i,f in enumerate(file_list):
+        os.system("cp " + f)
+    print(f"已複製 {len(file_list)} 個檔案，從{file_list[0]}到{file_list[-1]}")
+
+
+
+def parse_context(context):
+    """
+    將原始字串解析為鍵值對列表。
+    """
+    lines = [line.strip() for line in context.strip().split('\n') if line.strip()]
+    pairs = []
+    for line in lines:
+        if ':' in line:
+            key_value = line.split(':', 1)
+            if len(key_value) == 2:
+                key_str, value = key_value
+                try:
+                    key_int = int(key_str.strip())
+                    pairs.append((key_int, value.strip()))
+                except ValueError:
+                    continue
+    return pairs
+
+def is_sorted(pairs):
+    """
+    檢查鍵值對列表是否已按鍵的升序排序。
+    """
+    return all(pairs[i][0] <= pairs[i + 1][0] for i in range(len(pairs) - 1))
+
+def sort_context(pairs):
+    """
+    對鍵值對列表按鍵進行排序，並重建為字串格式。
+    """
+    sorted_pairs = sorted(pairs, key=lambda x: x[0])
+    s1 = sorted_pairs[0][0]  # 假設第一個鍵是 s1
+    sorted_lines = [f"{key}:{value}" for key, value in sorted_pairs]
+    return '\n'.join(sorted_lines), s1
+
+def sort_if_needed(context):
+    """
+    若資料未排序，則進行排序；否則返回原始資料。
+    """
+    pairs = parse_context(context)
+    if is_sorted(pairs):
+        print("資料已排序，無需排序。")
+        s1 = int(pairs[0][0])  # 假設第一個鍵是 s1
+        return context, s1
+    else:
+        print("資料未排序，開始排序。")
+        return sort_context(pairs)
+        
+def Combine(BC, J, D, L, P, m, phys, s1, s2):
+    folder = creatDir(BC, J, D, L, P, m, phys)
+    name = creatName(BC, J, D, L, P, m, phys)
+
+    mySourcePath = folder[0] + "/" + name[0]
+    groupSourcePath = folder[1] + "/" + name[1]
+    myTarPath = folder[2] + "/" + name[2]
+    groupTarPath = folder[3] + "/" + name[3]
+
+    seedArray = list(range(s1, s2 + 1))
+    # with open(groupTarPath, "r") as originFile:
+    #     originaText = originFile.readlines()
+    context = ""
+    # print("originaText")
+    for seed in seedArray:
+        groupSource = groupSourcePath.replace("s_re", str(seed))
+        mySource = mySourcePath.replace("s_re", str(seed))
+        # if f"{seed}:" in originaText[seed-1]:
+        #     continue
+        if os.path.exists(groupSource) and os.path.exists(mySource):
+            if compare(groupSource, mySource, seed):                
+                fcontext = fread(mySource, phys)
+            else:
+                # os.remove(groupSource)
+                shutil.copy(mySource, groupSource)
+                fcontext = fread(groupSource, phys)
+        elif os.path.exists(mySource):
+            os.makedirs(os.path.dirname(groupSource), exist_ok=True)
+            shutil.copy(mySource, groupSource)
+            # os.remove(mySource)
+            fcontext = fread(groupSource, phys)
+        elif os.path.exists(groupSource):
+            fcontext = fread(groupSource, phys)
+        else:
+            continue
+
+        if fcontext is not None:
+            context += f"{seed}:{fcontext}\n"
+
+    if context != "":
+        context, s1 = sort_if_needed(context)
+        
+        save_context(context, s1, groupTarPath, myTarPath, phys)
+        # os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
+
+
+def save_context(context, s1, groupTarPath, myTarPath, phys):
+    if not os.path.exists(groupTarPath):
+        os.makedirs(os.path.dirname(groupTarPath), exist_ok=True)
+
+    mode = "w" if s1 == 1 else "a"
+
+    if s1 == 1:
+        context = f"{phys}\n{context}"
+
+    with open(groupTarPath, mode) as f1:
+        try:
+            # 嘗試非阻塞加鎖
+            fcntl.flock(f1, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            print(f"✅ 立即取得鎖 [PID {os.getpid()}] ({'WRITE' if s1==1 else 'APPEND'}): {groupTarPath}")
+        except BlockingIOError:
+            print(f"⏳ 鎖住等待中 [PID {os.getpid()}] → {groupTarPath}")
+            fcntl.flock(f1, fcntl.LOCK_EX)
+            print(f"✅ 最終取得鎖 [PID {os.getpid()}]")
+
+        try:
+            f1.write(context)
+        finally:
+            fcntl.flock(f1, fcntl.LOCK_UN)
+            print(f"🔓 檔案已解鎖 [PID {os.getpid()}] → {groupTarPath}")
+            
+    if phys == "ZL":
+        save_ZL(BC, J, D, L, P, m, phys, groupTarPath)
+    elif phys == "energy":
+        save_gap(BC, J, D, L, P, m, phys, groupTarPath)
+    elif phys == "corr1" or phys == "corr2":
+        save_corr(BC, J, D, L, P, m, phys, groupTarPath)
+        
+def parameter_read_dict(filename):
+    parameters = {}
+    try:
+        with open(filename, 'r', encoding='utf-8') as file:
+            for line in file:
+                if ':' in line:
+                    key, value = line.split(':', 1)
+                    key = key.strip()
+                    value = value.strip()
+                    if key:
+                        parameters[key] = value
+    except FileNotFoundError:
+        print(f"無法開啟檔案: {filename}")
+    
+    return parameters
+
+
+
+
+
+def gapAverage(BC, J, D, L, P, m, phys, path=None):
     folder = creatDir(BC, J, D, L, P, m, phys)
     name = creatName(BC, J, D, L, P, m, phys)
     myTarPath = folder[2] + "/" + name[2]
-
+    if path is not None:
+        myTarPath = path
     gaplist = []
     try:
         with open(myTarPath, "r") as targetFile:
@@ -129,14 +302,14 @@ def gapAverage(BC, J, D, L, P, m, phys):
     except FileNotFoundError:
         print(f"File not found: {myTarPath}")
         return False, False, False
-    save_gapDistribute(gaplist, BC, J, D, L, P, m, phys)
+    save_gapDistribute(gaplist, BC, J, D, L, P, m, phys, myTarPath)
     gapAve = np.mean(gaplist)
     sample = len(gaplist) 
     error = np.std(gaplist, ddof=1)
 
     return gapAve, sample, error
 
-def save_gapDistribute(gaplist, BC, J, D, L, P, m, phys):
+def save_gapDistribute(gaplist, BC, J, D, L, P, m, phys, path=None):
     folder = creatDir(BC, J, D, L, P, m, phys)
     name = creatName(BC, J, D, L, P, m, phys)
     # print( f"folder[4]:{folder[4]}")
@@ -153,8 +326,8 @@ def save_gapDistribute(gaplist, BC, J, D, L, P, m, phys):
         with open(gapDisBase, "w") as targetFile:
             targetFile.write(context)
 
-def save_gap(BC, J, D, L, P, m, phys):
-    gapAve, sample, error = gapAverage(BC, J, D, L, P, m, phys)
+def save_gap(BC, J, D, L, P, m, phys, path=None):
+    gapAve, sample, error = gapAverage(BC, J, D, L, P, m, phys, path)
     if gapAve == False:
         print(f"Error: No data found for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
         return
@@ -168,11 +341,12 @@ def save_gap(BC, J, D, L, P, m, phys):
     with open(myTarPath, "w") as targetFile:
         targetFile.write(f"ground_state_energy, sample, error\n{gapAve}, {sample}, {error/math.sqrt(sample)}")
             
-def corrAverage(BC, J, D, L, P, m, phys):
+def corrAverage(BC, J, D, L, P, m, phys, path=None):
     folder = creatDir(BC, J, D, L, P, m, phys)
     name = creatName(BC, J, D, L, P, m, phys)
     myTarPath = folder[2] + "/" + name[2]
-
+    if path is not None:
+        myTarPath = path
     corrDic = {}
     try:
         with open(myTarPath, "r") as targetFile:
@@ -209,7 +383,7 @@ def corrAverage(BC, J, D, L, P, m, phys):
 
     return corr, sample, error
 
-def save_corrDistribute(corrDic, BC, J, D, L, P, m, phys):
+def save_corrDistribute(corrDic, BC, J, D, L, P, m, phys, path=None):
     folder = creatDir(BC, J, D, L, P, m, phys)
     name = creatName(BC, J, D, L, P, m, phys)
     # print( f"folder[4]:{folder[4]}")
@@ -232,8 +406,8 @@ def save_corrDistribute(corrDic, BC, J, D, L, P, m, phys):
             with open(corrDisPath, "w") as targetFile:
                 targetFile.write(context)
 
-def save_corr(BC, J, D, L, P, m, phys):
-    corr, sample, error = corrAverage(BC, J, D, L, P, m, phys)
+def save_corr(BC, J, D, L, P, m, phys, path=None):
+    corr, sample, error = corrAverage(BC, J, D, L, P, m, phys, path)
     if corr == False:
         print(f"Error: No data found for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
         return
@@ -257,15 +431,17 @@ def save_corr(BC, J, D, L, P, m, phys):
             targetFile.write(context)
 
 
-def ZLAverage(BC, J, D, L, P, m, phys):
+def ZLAverage(BC, J, D, L, P, m, phys, path=None):
     folder = creatDir(BC, J, D, L, P, m, phys)
     name = creatName(BC, J, D, L, P, m, phys)
     myTarPath = folder[2] + "/" + name[2]
+    if path is not None:
+        myTarPath = path
     zllist = []
     
     try:
         if not os.path.exists(myTarPath):
-            raise FileNotFoundError(f"{myTarPath} does not exist")
+            raise FileNotFoundError
         auto_delete_empty = True
         if os.path.getsize(myTarPath) == 0:
             if auto_delete_empty:
@@ -276,7 +452,7 @@ def ZLAverage(BC, J, D, L, P, m, phys):
             zllist = targetFile.readlines()
             if type(zllist[0]) == str or zllist[0] == "ZL":
                 del zllist[0]
-            zllist = [float(line.split(":")[-1]) for line in zllist]
+        zllist = [float(line.split(":")[-1]) for line in zllist]
         if not zllist:
             if auto_delete_empty:
                 os.remove(myTarPath)
@@ -288,14 +464,14 @@ def ZLAverage(BC, J, D, L, P, m, phys):
     except ValueError as e:
         print(f"跳過空檔案: {BC}, {J}, {D}, {L}, {P}, {m}, {phys} → {e}")
         return False, False, False
-    save_zlDistribute(zllist, BC, J, D, L, P, m, phys)
+    save_zlDistribute(zllist, BC, J, D, L, P, m, phys, myTarPath)
     zlAve = np.mean(zllist)
     sample = len(zllist)
     error = np.std(zllist, ddof=1)
 
     return zlAve, sample, error
 
-def save_zlDistribute(zllist, BC, J, D, L, P, m, phys):
+def save_zlDistribute(zllist, BC, J, D, L, P, m, phys, path=None):
     folder = creatDir(BC, J, D, L, P, m, phys)
     name = creatName(BC, J, D, L, P, m, phys)
     # print( f"folder[4]:{folder[4]}")
@@ -311,8 +487,8 @@ def save_zlDistribute(zllist, BC, J, D, L, P, m, phys):
         with open(zlDisBase, "w") as targetFile:
             targetFile.write(context)
 
-def save_ZL(BC, J, D, L, P, m, phys):
-    zlAve, sample, error = ZLAverage(BC, J, D, L, P, m, phys)
+def save_ZL(BC, J, D, L, P, m, phys, path=None):
+    zlAve, sample, error = ZLAverage(BC, J, D, L, P, m, phys, path)
     if zlAve == False:
         print(f"Error: No data found for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
         return
@@ -325,7 +501,6 @@ def save_ZL(BC, J, D, L, P, m, phys):
         os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
     with open(myTarPath, "w") as targetFile:
         targetFile.write(f"ZL, sample, errorbar\n{zlAve}, {sample}, {error/math.sqrt(sample)}")    
-# def save_gap():
 
 def list_txt_files(directory):
     txt_files = []
@@ -337,33 +512,55 @@ def list_txt_files(directory):
     return txt_files
 
 if __name__ == "__main__":
-    file = sys.argv[1]
-    arg = []
-    a = scriptCreator.para("read",file)
-    parameterlist = a.para
-    para=scriptCreator.paraList1(parameterlist["L"],parameterlist["J"],parameterlist["D"],parameterlist["S"])
-    BC = parameterlist["BC"]
-    Pdis = parameterlist["Pdis"]
-    chi = "m" + str(parameterlist["chi"])
-    s1 = int(sys.argv[2])
-    s2 = int(sys.argv[3])
-    if BC == "PBC":
-        s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
-        s_list = ["corr1","corr2"]
-    else:
-        s_list = ["ZL","corr1","corr2","J_list","energy","dimerization","w_loc","seed"]
-        s_list = ["corr1","corr2"]
+    # file = sys.argv[1]
+    # arg = []
+    # a = scriptCreator.para("read",file)
+    # parameterlist = a.para
+    # para=scriptCreator.paraList1(parameterlist["L"],parameterlist["J"],parameterlist["D"],parameterlist["S"])
+    # BC = parameterlist["BC"]
+    # Pdis = parameterlist["Pdis"]
+    # chi = "m" + str(parameterlist["chi"])
+    # s1 = int(sys.argv[2])
+    # s2 = int(sys.argv[3])
+    # if BC == "PBC":
+    #     s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
+    #     s_list = ["corr1","corr2"]
+    # else:
+    #     s_list = ["ZL","corr1","corr2","J_list","energy","dimerization","w_loc","seed"]
+    #     s_list = ["corr1","corr2"]
         
-    # for s in s_list:
-    for D in para.D_str:
-        for L in para.L_str:
-            for J in para.J_str:
-                save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr1")    
-                save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr2")
-                save_gap(BC, J, D, L, f"P{Pdis}", f"{chi}", "energy")   
-                save_ZL(BC, J, D, L, f"P{Pdis}", f"{chi}", "ZL")   
+    # # for s in s_list:
+    # for D in para.D_str:
+    #     for L in para.L_str:
+    #         for J in para.J_str:
+    #             save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr1")    
+    #             save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr2")
+    #             save_gap(BC, J, D, L, f"P{Pdis}", f"{chi}", "energy")   
+    #             save_ZL(BC, J, D, L, f"P{Pdis}", f"{chi}", "ZL")   
                     # arg.append((BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", s, s1, s2))
+    Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(10,201,10)]
 
+    Dstr = [f"Dim{str(i).zfill(3)}" for i in range(101)]
+    # Lstr = [f"L{num}" for num in range(31, 255, 32)]  # 只有 L512
+    Lstr = [f"L{num}" for num in range(8, 65, 8)]  # 只有 L512
+    Lstr1 = [f"L{num}" for num in range(96, 257, 32)]
+    Lstr = Lstr + Lstr1
+    chi = "m40"
+    BC = "PBC"
+    s1 = 1
+    s2 = 10000
+    Pdis = 10
+    arg = []
+    print(Dstr)
+    print(Lstr)
+    print(Jstr)
+    # for D in Dstr:
+    for L in Lstr:
+        for J in Jstr:
+            save_corr(BC, J, "Dim000", L, f"P{Pdis}", f"{chi}", "corr1")    
+            save_corr(BC, J, "Dim000", L, f"P{Pdis}", f"{chi}", "corr2")
+            save_gap(BC, J, "Dim000", L, f"P{Pdis}", f"{chi}", "energy")   
+            save_ZL(BC, J, "Dim000", L, f"P{Pdis}", f"{chi}", "ZL")   
     # save_corr(BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", "corr1")    
     # save_corr(BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", "corr2")
     # save_gap(BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", "energy")   

@@ -126,12 +126,6 @@ def creatName(BC, J, D, L, P, m, phys):
     groupTargetName = tarlist[phys].replace("BC_re", BC).replace("J_re", J).replace("D_re", D).replace("L_re", L).replace("P_re", P).replace("m_re", m) 
     return (mySourceName, groupSourceName, myTargetName, groupTargetName)
 
-def creatCpName(BC, J, D, L, P, m, phys):
-    CpName = newlist[phys].replace("BC_re", BC).replace("J_re", J).replace("D_re", D).replace("L_re", L).replace("P_re", P).replace("m_re", m) 
-    return CpName
-def creatColName(BC, J, D, L, P, m, phys):
-    colName = collist[phys].replace("BC_re", BC).replace("J_re", J).replace("D_re", D).replace("L_re", L).replace("P_re", P).replace("m_re", m) 
-    return colName
 def creatDir(BC, J, D, L, P, m, phys):
     sourcePath = "/".join(["tSDRG","Main_15","data_random","BC_re","J_re","D_re","L_re_P_re_m_re_s_re"])
     tarPath = "/".join(["tSDRG","Main_15","data_collect","BC_re","J_re","D_re","L_re_P_re_m_re"])
@@ -325,24 +319,7 @@ def save_context(context, s1, groupTarPath, myTarPath, phys):
                 f1.write(context)
                 fcntl.flock(f1, fcntl.LOCK_UN)
                 print("✅ 檔案已解鎖") 
-    # # print("originaText222")
-    # if s1 == 1:
-    #     context = f"{phys}\n{context}"
-    #     print(f"[WRITE] groupTarPath: {groupTarPath}, myTarPath: {myTarPath}")
-    #     with open(groupTarPath, "w") as f1:
-    #         f1.write(context)
-    #         # f2.write(context)
-    #     # with open(groupTarPath, "w") as f1, open(myTarPath, "w") as f2:
-    #     #     f1.write(context)
-    #     #     # f2.write(context)
-    # else:
-    #     print(f"[APPEND] groupTarPath: {groupTarPath}, myTarPath: {myTarPath}")
-    #     with open(groupTarPath, "a") as f1:
-    #         f1.write(context)
-    #             # f2.write(context)         
-    #         # with open(groupTarPath, "a") as f1, open(myTarPath, "a") as f2:
-    #         #     f1.write(context)
-    #         #     # f2.write(context)          
+
 
         
 def parameter_read_dict(filename):

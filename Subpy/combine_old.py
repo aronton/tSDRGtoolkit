@@ -434,23 +434,28 @@ if __name__ == "__main__":
     file = sys.argv[1]
     arg = []
     # Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(int(J),int(J)+1)]
-    # Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(30,81,50)]
+    Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(1,201)]
 
-    # Dstr = [f"Dim{str(i).zfill(3)}" for i in range(101)]
+    Dstr = [f"Dim{str(i).zfill(3)}" for i in range(101)]
     # Lstr = [f"L{num}" for num in range(31, 255, 32)]  # 只有 L512
-    # Lstr = [f"L{num}" for num in range(64, 129, 64)]  # 只有 L512
-    a = scriptCreator.para("read",file)
-    parameterlist = a.para
-    para=scriptCreator.paraList1(parameterlist["L"],parameterlist["J"],parameterlist["D"],parameterlist["S"])
-    BC = parameterlist["BC"]
-    Pdis = parameterlist["Pdis"]
-    chi = "m" + str(parameterlist["chi"])
+    Lstr = [f"L{num}" for num in range(64, 550, 64)]  # 只有 L512
+    chi = "m40"
+    BC = "PBC"
+    s1 = 1
+    s2 = 10000
+    # a = scriptCreator.para("read",file)
+    # parameterlist = a.para
+    # para=scriptCreator.paraList1(parameterlist["L"],parameterlist["J"],parameterlist["D"],parameterlist["S"])
+    # BC = parameterlist["BC"]
+    # Pdis = parameterlist["Pdis"]
+    # chi = "m" + str(parameterlist["chi"])
     # s1 = int(parameterlist["S"]["S1"])
     # s2 = int(parameterlist["S"]["S2"])
-    s1 = int(sys.argv[2])
-    s2 = int(sys.argv[3])
+    # s1 = int(sys.argv[2])
+    # s2 = int(sys.argv[3])
     if BC == "PBC":
         s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
+        s_list = ["ZL"]
     else:
         s_list = ["ZL","corr1","corr2","J_list","energy","dimerization","w_loc","seed"]
         
