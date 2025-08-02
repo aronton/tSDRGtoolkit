@@ -512,55 +512,55 @@ def list_txt_files(directory):
     return txt_files
 
 if __name__ == "__main__":
-    # file = sys.argv[1]
-    # arg = []
-    # a = scriptCreator.para("read",file)
-    # parameterlist = a.para
-    # para=scriptCreator.paraList1(parameterlist["L"],parameterlist["J"],parameterlist["D"],parameterlist["S"])
-    # BC = parameterlist["BC"]
-    # Pdis = parameterlist["Pdis"]
-    # chi = "m" + str(parameterlist["chi"])
-    # s1 = int(sys.argv[2])
-    # s2 = int(sys.argv[3])
-    # if BC == "PBC":
-    #     s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
-    #     s_list = ["corr1","corr2"]
-    # else:
-    #     s_list = ["ZL","corr1","corr2","J_list","energy","dimerization","w_loc","seed"]
-    #     s_list = ["corr1","corr2"]
-        
-    # # for s in s_list:
-    # for D in para.D_str:
-    #     for L in para.L_str:
-    #         for J in para.J_str:
-    #             save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr1")    
-    #             save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr2")
-    #             save_gap(BC, J, D, L, f"P{Pdis}", f"{chi}", "energy")   
-    #             save_ZL(BC, J, D, L, f"P{Pdis}", f"{chi}", "ZL")   
-                    # arg.append((BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", s, s1, s2))
-    Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(10,201,10)]
-
-    Dstr = [f"Dim{str(i).zfill(3)}" for i in range(101)]
-    # Lstr = [f"L{num}" for num in range(31, 255, 32)]  # 只有 L512
-    Lstr = [f"L{num}" for num in range(8, 65, 8)]  # 只有 L512
-    Lstr1 = [f"L{num}" for num in range(96, 257, 32)]
-    Lstr = Lstr + Lstr1
-    chi = "m40"
-    BC = "PBC"
-    s1 = 1
-    s2 = 10000
-    Pdis = 10
+    file = sys.argv[1]
     arg = []
-    print(Dstr)
-    print(Lstr)
-    print(Jstr)
-    # for D in Dstr:
-    for L in Lstr:
-        for J in Jstr:
-            save_corr(BC, J, "Dim000", L, f"P{Pdis}", f"{chi}", "corr1")    
-            save_corr(BC, J, "Dim000", L, f"P{Pdis}", f"{chi}", "corr2")
-            save_gap(BC, J, "Dim000", L, f"P{Pdis}", f"{chi}", "energy")   
-            save_ZL(BC, J, "Dim000", L, f"P{Pdis}", f"{chi}", "ZL")   
+    a = scriptCreator.para("read",file)
+    parameterlist = a.para
+    para=scriptCreator.paraList1(parameterlist["L"],parameterlist["J"],parameterlist["D"],parameterlist["S"])
+    BC = parameterlist["BC"]
+    Pdis = parameterlist["Pdis"]
+    chi = "m" + str(parameterlist["chi"])
+    s1 = int(sys.argv[2])
+    s2 = int(sys.argv[3])
+    if BC == "PBC":
+        s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
+        s_list = ["corr1","corr2"]
+    else:
+        s_list = ["ZL","corr1","corr2","J_list","energy","dimerization","w_loc","seed"]
+        s_list = ["corr1","corr2"]
+        
+    # for s in s_list:
+    for D in para.D_str:
+        for L in para.L_str:
+            for J in para.J_str:
+                save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr1")    
+                save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr2")
+                save_gap(BC, J, D, L, f"P{Pdis}", f"{chi}", "energy")   
+                save_ZL(BC, J, D, L, f"P{Pdis}", f"{chi}", "ZL")   
+                    # arg.append((BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", s, s1, s2))
+    # Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(10,201,10)]
+
+    # Dstr = [f"Dim{str(i).zfill(3)}" for i in range(101)]
+    # # Lstr = [f"L{num}" for num in range(31, 255, 32)]  # 只有 L512
+    # Lstr = [f"L{num}" for num in range(8, 65, 8)]  # 只有 L512
+    # Lstr1 = [f"L{num}" for num in range(96, 257, 32)]
+    # Lstr = Lstr + Lstr1
+    # chi = "m40"
+    # BC = "PBC"
+    # s1 = 1
+    # s2 = 10000
+    # Pdis = 10
+    # arg = []
+    # print(Dstr)
+    # print(Lstr)
+    # print(Jstr)
+    # # for D in Dstr:
+    # for L in Lstr:
+    #     for J in Jstr:
+    #         save_corr(BC, J, "Dim000", L, f"P{Pdis}", f"{chi}", "corr1")    
+    #         save_corr(BC, J, "Dim000", L, f"P{Pdis}", f"{chi}", "corr2")
+    #         save_gap(BC, J, "Dim000", L, f"P{Pdis}", f"{chi}", "energy")   
+    #         save_ZL(BC, J, "Dim000", L, f"P{Pdis}", f"{chi}", "ZL")   
     # save_corr(BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", "corr1")    
     # save_corr(BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", "corr2")
     # save_gap(BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", "energy")   

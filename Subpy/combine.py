@@ -270,55 +270,85 @@ def Combine(BC, J, D, L, P, m, phys, s1, s2):
         
         save_context(context, s1, groupTarPath, myTarPath, phys)
         # os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
-
-
 def save_context(context, s1, groupTarPath, myTarPath, phys):
     if not os.path.exists(groupTarPath):
         os.makedirs(os.path.dirname(groupTarPath), exist_ok=True)
+
+    mode = "w" if s1 == 1 else "a"
+
     if s1 == 1:
         context = f"{phys}\n{context}"
-        # print(f"[WRITE] groupTarPath: {groupTarPath}, myTarPath: {myTarPath}")
-        with open(groupTarPath, "w") as f1:
+
+    with open(groupTarPath, mode) as f1:
+        try:
+            # 嘗試非阻塞加鎖
+            fcntl.flock(f1, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            print(f"✅ 立即取得鎖 [PID {os.getpid()}] ({'WRITE' if s1==1 else 'APPEND'}): {groupTarPath}")
+        except BlockingIOError:
+            print(f"⏳ 鎖住等待中 [PID {os.getpid()}] → {groupTarPath}")
+            fcntl.flock(f1, fcntl.LOCK_EX)
+            print(f"✅ 最終取得鎖 [PID {os.getpid()}]")
+
+        try:
+            f1.write(context)
+        finally:
+            fcntl.flock(f1, fcntl.LOCK_UN)
+            print(f"🔓 檔案已解鎖 [PID {os.getpid()}] → {groupTarPath}")
             
-            try:
-                # 嘗試用非阻塞方式加鎖
-                fcntl.flock(f1, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                print("✅ 立即取得鎖")
-                print(f"檔案已鎖定 [WRITE] groupTarPath: {groupTarPath}, s1:{s1}, 目前進程 PID: {os.getpid()}")
-                f1.write(context)
-                fcntl.flock(f1, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                print("✅ 檔案已解鎖")    
-            except BlockingIOError:
-                print("⏳ 檔案已被鎖住，進入等待模式...")
-                fcntl.flock(f1, fcntl.LOCK_EX)  # 這裡才會阻塞，等釋放
-                print("✅ 最終取得鎖")
-                print(f"檔案已鎖定 [WRITE] groupTarPath: {groupTarPath}, s1:{s1}, 目前進程 PID: {os.getpid()}")
-                f1.write(context)
-                fcntl.flock(f1, fcntl.LOCK_UN)
-                print("✅ 檔案已解鎖")            # f2.write(context)
-        # with open(groupTarPath, "w") as f1, open(myTarPath, "w") as f2:
-        #     f1.write(context)
-        #     # f2.write(context)
-    else:
-        # print(f"[APPEND] groupTarPath: {groupTarPath}, myTarPath: {myTarPath}")
-        with open(groupTarPath, "a") as f1:
+    if phys == "ZL":
+        save_ZL(BC, J, D, L, P, m, phys, groupTarPath)
+    elif phys == "energy":
+        save_gap(BC, J, D, L, P, m, phys, groupTarPath)
+    elif phys == "corr1" or phys == "corr2":
+        save_corr(BC, J, D, L, P, m, phys, groupTarPath)
+
+# def save_context(context, s1, groupTarPath, myTarPath, phys):
+#     if not os.path.exists(groupTarPath):
+#         os.makedirs(os.path.dirname(groupTarPath), exist_ok=True)
+#     if s1 == 1:
+#         context = f"{phys}\n{context}"
+#         # print(f"[WRITE] groupTarPath: {groupTarPath}, myTarPath: {myTarPath}")
+#         with open(groupTarPath, "w") as f1:
             
-            try:
-                # 嘗試用非阻塞方式加鎖
-                fcntl.flock(f1, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                print("✅ 立即取得鎖")
-                print(f"檔案已鎖定 [APPEND] groupTarPath: {groupTarPath}, s1:{s1}, 目前進程 PID: {os.getpid()}")
-                f1.write(context)
-                fcntl.flock(f1, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                print("✅ 檔案已解鎖")    
-            except BlockingIOError:
-                print("⏳ 檔案已被鎖住，進入等待模式...")
-                fcntl.flock(f1, fcntl.LOCK_EX)  # 這裡才會阻塞，等釋放
-                print("✅ 最終取得鎖")
-                print(f"檔案已鎖定 [APPEND] groupTarPath: {groupTarPath}, s1:{s1}, 目前進程 PID: {os.getpid()}")
-                f1.write(context)
-                fcntl.flock(f1, fcntl.LOCK_UN)
-                print("✅ 檔案已解鎖") 
+#             try:
+#                 # 嘗試用非阻塞方式加鎖
+#                 fcntl.flock(f1, fcntl.LOCK_EX | fcntl.LOCK_NB)
+#                 print("✅ 立即取得鎖")
+#                 print(f"檔案已鎖定 [WRITE] groupTarPath: {groupTarPath}, s1:{s1}, 目前進程 PID: {os.getpid()}")
+#                 f1.write(context)
+#                 fcntl.flock(f1, fcntl.LOCK_EX | fcntl.LOCK_NB)
+#                 print("✅ 檔案已解鎖")    
+#             except BlockingIOError:
+#                 print("⏳ 檔案已被鎖住，進入等待模式...")
+#                 fcntl.flock(f1, fcntl.LOCK_EX)  # 這裡才會阻塞，等釋放
+#                 print("✅ 最終取得鎖")
+#                 print(f"檔案已鎖定 [WRITE] groupTarPath: {groupTarPath}, s1:{s1}, 目前進程 PID: {os.getpid()}")
+#                 f1.write(context)
+#                 fcntl.flock(f1, fcntl.LOCK_UN)
+#                 print("✅ 檔案已解鎖")            # f2.write(context)
+#         # with open(groupTarPath, "w") as f1, open(myTarPath, "w") as f2:
+#         #     f1.write(context)
+#         #     # f2.write(context)
+#     else:
+#         # print(f"[APPEND] groupTarPath: {groupTarPath}, myTarPath: {myTarPath}")
+#         with open(groupTarPath, "a") as f1:
+            
+#             try:
+#                 # 嘗試用非阻塞方式加鎖
+#                 fcntl.flock(f1, fcntl.LOCK_EX | fcntl.LOCK_NB)
+#                 print("✅ 立即取得鎖")
+#                 print(f"檔案已鎖定 [APPEND] groupTarPath: {groupTarPath}, s1:{s1}, 目前進程 PID: {os.getpid()}")
+#                 f1.write(context)
+#                 fcntl.flock(f1, fcntl.LOCK_EX | fcntl.LOCK_NB)
+#                 print("✅ 檔案已解鎖")    
+#             except BlockingIOError:
+#                 print("⏳ 檔案已被鎖住，進入等待模式...")
+#                 fcntl.flock(f1, fcntl.LOCK_EX)  # 這裡才會阻塞，等釋放
+#                 print("✅ 最終取得鎖")
+#                 print(f"檔案已鎖定 [APPEND] groupTarPath: {groupTarPath}, s1:{s1}, 目前進程 PID: {os.getpid()}")
+#                 f1.write(context)
+#                 fcntl.flock(f1, fcntl.LOCK_UN)
+#                 print("✅ 檔案已解鎖") 
 
 
         
