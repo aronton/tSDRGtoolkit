@@ -6,6 +6,8 @@ import multiprocessing
 import datetime
 import scriptCreator
 import subprocess
+import combine
+
 
 dicosPath = "/ceph/work/NTHU-qubit/LYT/tSDRG_random"
 scopionPath = "/home/aronton/tSDRG_random"
@@ -87,7 +89,7 @@ def submitPara(parameterlist, tSDRG_path):
     
     os.system( "cd " + tSDRG_path + "/tSDRG/Main_" + str(Spin))
     script_path_tot = "" 
-    submitlsit = []
+    jobNamelist = []
     argvlist = []
     # for l,L in enumerate(L_num):
     #     for j,J in enumerate(J_num):
@@ -104,15 +106,14 @@ def submitPara(parameterlist, tSDRG_path):
                 #     s = S_num[s_i]
                 name = ["Spin"+str(Spin),L,J,D,"P"+str(Pdis),"BC="+BC,"chi"+str(chi),"partition="+str(partition),"seed1="+str(s1),"seed2="+str(s2),"ds="+str(ds),"task="+task]
                 name = "_".join(name)
-                submitlsit.append(name)
-    return (submitlsit, argvlist)           
+                jobNamelist.append(name)
+    return (jobNamelist, argvlist)           
 
 # edit script & submit task
 def EditandSub(paraPath,script_path,output_path,jobName):
     task = ""
     with open(paraPath,"r") as file:
         elementlist = file.readlines()
-        print(elementlist)
         for element in elementlist:
             if "partition" in element:
                 partition = str(element.split(":")[1].replace("\n",""))
@@ -160,8 +161,7 @@ def EditandSub(paraPath,script_path,output_path,jobName):
     os.system(submit_cmd)    
 
 # organize task and parameter name into scriptpath
-def submit(parameterlist, tSDRG_path, tasklist=None):
-    print(parameterlist)
+def submit(parameterlist, tSDRG_path, jobNamelist=None):
     p = parameterlist
     Ncore = parameterlist["Ncore"]
     partition = parameterlist["partition1"]
@@ -192,14 +192,14 @@ def submit(parameterlist, tSDRG_path, tasklist=None):
 
     # with open("run.sh", "r") as file:
     #     template = file.readlines()
-    if tasklist == None:
-        tasklist, arg = submitPara(parameterlist, tSDRG_path)
+    if jobNamelist == None:
+        jobNamelist, arg = submitPara(parameterlist, tSDRG_path)
     os.system( "cd " + tSDRG_path + "/tSDRG/Main_" + str(Spin))
-    for i,s in enumerate(tasklist[0]):
-        print(s)
+
     # script_path_tot = "" 
-    # print(tasklist)
-    for i,jobName in enumerate(tasklist):
+    for i, name in enumerate(jobNamelist):
+        print(f"{i+1, name}")
+    for i,jobName in enumerate(jobNamelist):
         elementlist = jobName.split("_")
         L = elementlist[1]
         J = elementlist[2]
@@ -246,12 +246,15 @@ def submit(parameterlist, tSDRG_path, tasklist=None):
                 elif "seed2" in element:
                     s = str(element.replace("=",":").replace("seed","s"))
                     file.writelines(s + "\n")
+                elif "ds" in element:
+                    s = str(element.replace("=",":"))
+                    file.writelines(s + "\n")
                 elif "check" in element:
                     file.writelines(element + "\n")
                 elif "task" in element:
                     s = str(element.replace("=",":"))
                     file.writelines(s + "\n")
-            file.writelines("ds:"+str(ds) + "\n")
+            # file.writelines("ds:"+str(ds) + "\n")
         EditandSub(paraPath, script_path, output_path, jobName)
 
 
@@ -595,6 +598,9 @@ def main():
     elif task == "check" or task == "f":
         Distribution(parameterlist)
     elif task == "collect" or task == "g":
+        tasklist = submitPara(parameterlist, tSDRG_path)
+        submit(parameterlist, tSDRG_path)
+    elif task == "average" or task == "h":
         tasklist = submitPara(parameterlist, tSDRG_path)
         submit(parameterlist, tSDRG_path)
     return

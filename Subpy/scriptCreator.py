@@ -54,7 +54,9 @@ class paraList1:
             self.J_p_s100 = self.J_s100.copy()
             self.J_p_str = [str(J_dic["J1"]),str(J_dic["J2"]),"000"]
             return
-        self.J_num = [round(n*J_dic["dJ"] + J_dic["J1"],2) for n in range(int((100*J_dic["J2"]-100*J_dic["J1"])/(100*J_dic["dJ"]))+1)]
+        numlen = int(round((100*J_dic["J2"]-100*J_dic["J1"])/(100*J_dic["dJ"]),0)+1)
+        self.J_num = [round(n*J_dic["dJ"] + J_dic["J1"],2) for n in range(numlen)]
+        # self.J_num = [round(n*J_dic["dJ"] + J_dic["J1"],2) for n in range(int((100*J_dic["J2"]-100*J_dic["J1"])/(100*J_dic["dJ"]))+1)]
         # self.J_list = [j for j in range(J_dic["L1"], J_dic["L2"]+1, J_dic["dL"])]
         self.J_s100 = [(str(n) + "0").replace('.', '') if len(str(n)) < 4 else str(n).replace('.', '') for n in self.J_num]
         self.J_str = [ "Jdis" + (str(n) + "0").replace('.', '') if len(str(n)) < 4 else "Jdis" + str(n).replace('.', '') for n in self.J_num]
@@ -85,7 +87,8 @@ class paraList1:
             self.D_p_s100 = [str(D_dic["D1"]),str(D_dic["D2"]),"000"]
             self.D_p_str = ["Dim" + self.D_s100[0],"Dim" + self.D_s100[0],"Dim000"]
             return
-        self.D_num = [round(n*D_dic["dD"] + D_dic["D1"],2) for n in range(int((100*D_dic["D2"]-100*D_dic["D1"])/(100*D_dic["dD"]))+1)]
+        numlen = int(round((100*D_dic["D2"]-100*D_dic["D1"])/(100*D_dic["dD"]),0)+1)
+        self.D_num = [round(n*D_dic["dD"] + D_dic["D1"],2) for n in range(numlen)]
         # self.J_list = [j for j in range(J_dic["L1"], J_dic["L2"]+1, J_dic["dL"])]
         self.D_s100 = [(str(n) + "0").replace('.', '') if len(str(n)) < 4 else str(n).replace('.', '') for n in self.D_num]
         self.D_str = [ "Dim" + (str(n) + "0").replace('.', '') if len(str(n)) < 4 else "Dim" + str(n).replace('.', '') for n in self.D_num]

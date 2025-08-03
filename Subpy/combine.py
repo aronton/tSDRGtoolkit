@@ -295,12 +295,12 @@ def save_context(context, s1, groupTarPath, myTarPath, phys):
             fcntl.flock(f1, fcntl.LOCK_UN)
             print(f"🔓 檔案已解鎖 [PID {os.getpid()}] → {groupTarPath}")
             
-    if phys == "ZL":
-        save_ZL(BC, J, D, L, P, m, phys, groupTarPath)
-    elif phys == "energy":
-        save_gap(BC, J, D, L, P, m, phys, groupTarPath)
-    elif phys == "corr1" or phys == "corr2":
-        save_corr(BC, J, D, L, P, m, phys, groupTarPath)
+    # if phys == "ZL":
+    #     save_ZL(BC, J, D, L, P, m, phys, groupTarPath)
+    # elif phys == "energy":
+    #     save_gap(BC, J, D, L, P, m, phys, groupTarPath)
+    # elif phys == "corr1" or phys == "corr2":
+    #     save_corr(BC, J, D, L, P, m, phys, groupTarPath)
 
 # def save_context(context, s1, groupTarPath, myTarPath, phys):
 #     if not os.path.exists(groupTarPath):

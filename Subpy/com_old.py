@@ -618,7 +618,6 @@ if __name__ == "__main__":
     # s2 = int(sys.argv[3])
     if BC == "PBC":
         s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
-        s_list = ["ZL"]
     else:
         s_list = ["ZL","corr1","corr2","J_list","energy","dimerization","w_loc","seed"]
         

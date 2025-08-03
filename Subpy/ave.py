@@ -388,7 +388,7 @@ def save_corrDistribute(corrDic, BC, J, D, L, P, m, phys, path=None):
     name = creatName(BC, J, D, L, P, m, phys)
     # print( f"folder[4]:{folder[4]}")
     corrDisBase = folder[5] + "/" + name[5]
-    for key, values in corrDic.items():
+    for key, values in list(corrDic.items())[-4:]:
         context = ""
         if BC == "OBC":
             context = f"C_etoe=<S(0)S(dx={key})>\n"
@@ -417,7 +417,7 @@ def save_corr(BC, J, D, L, P, m, phys, path=None):
     myTarPathBase = folder[4] + "/" + name[4]
     # print(f"myTarPath:{myTarPath}")
 
-    for key in corr.keys():
+    for key, values in list(corrDic.items())[-4:]:
         if corr[key] == None:
             continue
         myTarPath = myTarPathBase.replace("dx_re", f"dx={key}")
@@ -535,8 +535,9 @@ if __name__ == "__main__":
             for J in para.J_str:
                 save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr1")    
                 save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr2")
+                save_ZL(BC, J, D, L, f"P{Pdis}", f"{chi}", "ZL")  
                 save_gap(BC, J, D, L, f"P{Pdis}", f"{chi}", "energy")   
-                save_ZL(BC, J, D, L, f"P{Pdis}", f"{chi}", "ZL")   
+                 
                     # arg.append((BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", s, s1, s2))
     # Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(10,201,10)]
 
