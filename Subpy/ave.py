@@ -339,7 +339,7 @@ def save_gap(BC, J, D, L, P, m, phys, path=None):
     if not os.path.exists(myTarPath):
         os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
     with open(myTarPath, "w") as targetFile:
-        targetFile.write(f"ground_state_energy, sample, error\n{gapAve}, {sample}, {error/math.sqrt(sample)}")
+        targetFile.write(f"ground_state_energy, sample, errorbar\n{gapAve}, {sample}, {error/math.sqrt(sample)}")
             
 def corrAverage(BC, J, D, L, P, m, phys, path=None):
     folder = creatDir(BC, J, D, L, P, m, phys)
@@ -417,7 +417,7 @@ def save_corr(BC, J, D, L, P, m, phys, path=None):
     myTarPathBase = folder[4] + "/" + name[4]
     # print(f"myTarPath:{myTarPath}")
 
-    for key, values in list(corrDic.items())[-4:]:
+    for key, values in list(corr.items())[-4:]:
         if corr[key] == None:
             continue
         myTarPath = myTarPathBase.replace("dx_re", f"dx={key}")

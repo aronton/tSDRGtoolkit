@@ -135,7 +135,7 @@ def EditandSub(paraPath,script_path,output_path,jobName):
         "replace2": str(ds),
         "replace3": str(partition),
         "replace4": output_path,
-        "replace5": str(ds)
+        # "replace5": str(ds)
     }
     # print(task)
     if task == "submit":
@@ -562,7 +562,7 @@ def main():
 
     if task == "submit" or task == "a":
         tasklist = submitPara(parameterlist, tSDRG_path)
-        submit(parameterlist, tSDRG_path)
+        submit(parameterlist, tSDRG_path, tasklist)
     elif task == "show" or task == "b":
         show(parameterlist)
         Distribution(parameterlist)
