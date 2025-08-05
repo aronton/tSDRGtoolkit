@@ -157,7 +157,7 @@ def EditandSub(paraPath,script_path,output_path,jobName):
 
     print(f"替換完成，結果已儲存至 {script_path}")
 
-    submit_cmd = f"sbatch --ntasks={ds} {script_path} {paraPath} {output_path}"
+    submit_cmd = f"sbatch {script_path} {paraPath} {output_path}"
     os.system(submit_cmd)    
 
 # organize task and parameter name into scriptpath
@@ -562,7 +562,7 @@ def main():
 
     if task == "submit" or task == "a":
         tasklist = submitPara(parameterlist, tSDRG_path)
-        submit(parameterlist, tSDRG_path, tasklist)
+        submit(parameterlist, tSDRG_path)
     elif task == "show" or task == "b":
         show(parameterlist)
         Distribution(parameterlist)
