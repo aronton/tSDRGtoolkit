@@ -160,18 +160,103 @@ def EditandSub(paraPath,script_path,output_path,jobName):
     submit_cmd = f"sbatch {script_path} {paraPath} {output_path}"
     os.system(submit_cmd)    
 
+def taskSeperate(jobNamelist):
+    parameter = []
+    jobNamelist = jobNamelist[0]
+    s = ["Spin", "_L", "_Jdis", "_Dim", "_P", "_BC=", "_chi", "_partition", "_seed1", "_seed2", "_ds", "_task"]
+    for i,jobName in enumerate(jobNamelist):
+        elementlist = jobName.split("_")
+        L = elementlist[1]
+        J = elementlist[2]
+        D = elementlist[3]
+            
+    # os.makedirs("/".join([tSDRG_path,"parameterRead",now_year,now_date,"_".join([jobName,f"{now_time}.txt"])]). exist_ok=True)
+        dic = {}
+        for element in elementlist:
+            if "D" in element:
+                dic["Dstr"] = element
+                s = str(element.replace("Dim",""))
+                # file.writelines("D:" + s[0] + "." + s[1] + s[2] + "\n")
+            elif "J" in element:
+                dic["Jstr"] = element
+                s = str(element.replace("Jdis",""))
+                # file.writelines("J:"+ s[0] + "." + s[1] + s[2] + "\n")
+            elif "L" in element:
+                dic["Lstr"] = element
+                s = str(element.replace("L",""))
+                # file.writelines("L:"+ s + "\n")
+            elif "BC" in element:
+                dic["BC"] = element
+                # file.writelines(element.replace("=",":") + "\n")
+            elif "partition" in element:
+                dic["partition"] = element.replace("partition=","")
+                # file.writelines("partition:" + partition + "\n")
+            elif "P" in element:
+                dic["Pdis"] = element
+                s = str(element.replace("P",""))
+                # file.writelines("Pdis:" + s[0] + s[1] + "\n")
+            elif "chi" in element:
+                dic["chi"] = str(element.replace("chi","B"))
+                s = str(element.replace("chi",""))
+                # file.writelines("chi:" +s[0] + s[1] + "\n")
+            elif "seed1" in element:
+                dic["seed1"] = str(element.replace("seed1=",""))
+                s1 = str(element.replace("=",":").replace("seed","s"))
+                # file.writelines(s + "\n")
+            elif "seed2" in element:
+                dic["seed2"] = str(element.replace("seed2=",""))
+                s2 = str(element.replace("=",":").replace("seed","s"))
+                # file.writelines(s + "\n")
+            elif "ds" in element:
+                dic["ds"] = str(element.replace("ds=",""))
+                ds = str(element.replace("=",":"))
+                # file.writelines(s + "\n")
+            elif "check" in element:
+                dic["check"] = str(element.replace("check=",""))
+                # file.writelines(element + "\n")
+            elif "task" in element:
+                dic["task"] = str(element.replace("task=",""))
+                task = str(element.replace("=",":"))
+                # file.writelines(s + "\n")    
+            elif "Spin" in element:
+                dic["Spin"] = str(element.replace("Spin=",""))
+                Spin = str(element.replace("Spin",""))
+        parameter.append(dic)       
+    return parameter[0] 
+        
+
 # organize task and parameter name into scriptpath
 def submit(parameterlist, tSDRG_path, jobNamelist=None):
-    p = parameterlist
-    Ncore = parameterlist["Ncore"]
-    partition = parameterlist["partition1"]
-    Spin=parameterlist["Spin"]
-    Pdis=parameterlist["Pdis"]
-    chi=parameterlist["chi"]
-    BC=parameterlist["BC"]
-    if parameterlist["task"] == "submit":
-        check_Or_Not=parameterlist["check_Or_Not"]
-    ds=parameterlist["S"]["dS"]
+
+    splitStr = ["Spin", "_L", "_Jdis", "_Dim", "_P10", "_P20", "_BC=", "_chi", "_partition=", "_seed1=", "_seed2=", "_ds=", "_task="]
+    splitNum = []
+    if jobNamelist == None:
+        p = parameterlist
+        Ncore = parameterlist["Ncore"]
+        partition = parameterlist["partition1"]
+        Spin=parameterlist["Spin"]
+        Pdis=parameterlist["Pdis"]
+        chi=parameterlist["chi"]
+        BC=parameterlist["BC"]
+        if parameterlist["task"] == "submit":
+            check_Or_Not=parameterlist["check_Or_Not"]
+        ds=parameterlist["S"]["dS"]
+        jobNamelist, arg = submitPara(parameterlist, tSDRG_path)
+    else:
+        jobName = jobNamelist[0]
+        chiNum = jobName.find("_chi")
+        partitionNum = jobName.find("_partition")
+        chi = jobName[chiNum+4:partitionNum]
+        # partition = jobName[partitionNum+11:partitionNum+13]
+        SpinNum = jobName.find("Spin")
+        LNum = jobName.find("_L")
+        # L = jobName[LNum+4:LNum]
+        Spin = jobName[SpinNum+4:LNum]
+        
+        BCNum = jobName.find("_BC=")
+        BC = jobName[BCNum+4:BCNum+7]
+
+        
 
     record_dir = tSDRG_path + "/tSDRG" + "/Main_" + str(Spin) + "/jobRecord" 
     if parameterlist["task"] == "collect":
@@ -187,13 +272,11 @@ def submit(parameterlist, tSDRG_path, jobNamelist=None):
     now_time = "H" + str(nt.hour) + "_M" + str(nt.minute) + "_S" + str(nt.second)
 
     # with open("/".join([tSDRG_path,"parameterRead",now_year,now_date])) as file:
-        
-
+    
 
     # with open("run.sh", "r") as file:
     #     template = file.readlines()
-    if jobNamelist == None:
-        jobNamelist, arg = submitPara(parameterlist, tSDRG_path)
+
     os.system( "cd " + tSDRG_path + "/tSDRG/Main_" + str(Spin))
 
     # script_path_tot = "" 
@@ -233,6 +316,9 @@ def submit(parameterlist, tSDRG_path, jobNamelist=None):
                 elif "BC" in element:
                     file.writelines(element.replace("=",":") + "\n")
                 elif "partition" in element:
+                    partitionNum = jobName.find("_partition=")
+                    seed1Num = jobName.find("_seed1=")
+                    partition = jobName[partitionNum + len("_partition="):seed1Num]
                     file.writelines("partition:" + partition + "\n")
                 elif "P" in element:
                     s = str(element.replace("P",""))
@@ -387,6 +473,29 @@ def show(parameterlist):
 
     for i in range(len(job_list)):
         print(job_list[i])
+
+def collectData(parameterlist):
+    parameterlist = a.para
+    para=scriptCreator.paraList1(parameterlist["L"],parameterlist["J"],parameterlist["D"],parameterlist["S"])
+    BC = parameterlist["BC"]
+    Pdis = parameterlist["Pdis"]
+    chi = "m" + str(parameterlist["chi"])
+    s1 = int(parameterlist["S"]["S1"])
+    s2 = int(parameterlist["S"]["S2"])
+
+    if BC == "PBC":
+        s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
+    else:
+        s_list = ["ZL","corr1","corr2","J_list","energy","dimerization","w_loc","seed"]
+        
+    for s in s_list:
+        for L in para.L_str:
+            for J in para.J_str:
+                    arg.append((BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", s, s1, s2))
+    print("---------------------col--------------------\n")
+    with multiprocessing.Pool(processes=Ncore) as pool:
+        results1 = pool.starmap(Combine, arg)        
+    return
 
 def Distribution(parameterlist):
         
@@ -590,7 +699,7 @@ def main():
         mydict = parameterlist['S']
         found = any("skip" in str(v) for v in mydict.values() if isinstance(v, str))
         if found == True:
-            submit(psubmit.para, tSDRG_path,tasklist)
+            submit(psubmit.para, tSDRG_path, tasklist)
         else:
             submit(psubmit.para, tSDRG_path)
     elif task == "dis" or task == "e":
@@ -598,6 +707,7 @@ def main():
     elif task == "check" or task == "f":
         Distribution(parameterlist)
     elif task == "collect" or task == "g":
+        if 
         tasklist = submitPara(parameterlist, tSDRG_path)
         submit(parameterlist, tSDRG_path)
     elif task == "average" or task == "h":
