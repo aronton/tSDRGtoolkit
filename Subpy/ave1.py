@@ -54,6 +54,7 @@ tarlist = {
 
 metalist = {
     "ZL":"_".join(["ZL","L_re","P_re","m_re","J_re","D_re.txt"]),\
+    "dimerization":"_".join(["dimerization","L_re","P_re","m_re","J_re","D_re.txt"]),\
     "energy":"_".join(["gap","L_re","P_re","m_re","J_re","D_re.txt"]),\
     "corr1":"_".join(["corr1","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
     "corr2":"_".join(["corr2","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
@@ -61,6 +62,7 @@ metalist = {
 
 metaDislist = {
     "ZL":"_".join(["ZL_dis","L_re","P_re","m_re","J_re","D_re.txt"]),\
+    "dimerization":"_".join(["dimerization_dis","L_re","P_re","m_re","J_re","D_re.txt"]),\
     "energy":"_".join(["gap_dis","L_re","P_re","m_re","J_re","D_re.txt"]),\
     "corr1":"_".join(["corr1_dis","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
     "corr2":"_".join(["corr2_dis","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
@@ -208,7 +210,7 @@ def Combine(BC, J, D, L, P, m, phys, s1, s2):
                 shutil.copy(mySource, groupSource)
                 fcontext = fread(groupSource, phys)
         elif os.path.exists(mySource):
-            # os.makedirs(os.path.dirname(groupSource), exist_ok=True)
+            os.makedirs(os.path.dirname(groupSource), exist_ok=True)
             shutil.copy(mySource, groupSource)
             # os.remove(mySource)
             fcontext = fread(groupSource, phys)
@@ -275,76 +277,7 @@ def parameter_read_dict(filename):
     
     return parameters
 
-def dimerAverage(BC, J, D, L, P, m, phys, path=None):
-    folder = creatDir(BC, J, D, L, P, m, phys)
-    name = creatName(BC, J, D, L, P, m, phys)
-    myTarPath = folder[2] + "/" + name[2]
-    if path is not None:
-        myTarPath = path
-    dimerlist = []
-    
-    try:
-        if not os.path.exists(myTarPath):
-            raise FileNotFoundError
-        auto_delete_empty = True
-        if os.path.getsize(myTarPath) == 0:
-            if auto_delete_empty:
-                os.remove(myTarPath)
-                print(f"[刪除] 空檔案已刪除：{myTarPath}")
-            raise ValueError("檔案為空")
-        with open(myTarPath, "r") as targetFile:
-            dimerlist = targetFile.readlines()
-            if type(dimerlist[0]) == str or dimerlist[0] == "dimerization":
-                del dimerlist[0]
-        dimerlist = [float(line.split(":")[-1]) for line in dimerlist]
-        if not dimerlist:
-            if auto_delete_empty:
-                os.remove(myTarPath)
-                print(f"[刪除] 空檔案已刪除：{myTarPath}")
-            raise ValueError("檔案內容為空")
-    except FileNotFoundError:
-        print(f"File not found: {myTarPath}")
-        return False, False, False
-    except ValueError as e:
-        print(f"跳過空檔案: {BC}, {J}, {D}, {L}, {P}, {m}, {phys} → {e}")
-        return False, False, False
-    save_dimerDistribute(dimerlist, BC, J, D, L, P, m, phys, myTarPath)
-    dimerAve = np.mean(dimerlist)
-    sample = len(dimerlist)
-    error = np.std(dimerlist, ddof=1)
 
-    return dimerAve, sample, error
-
-def save_dimerDistribute(zllist, BC, J, D, L, P, m, phys, path=None):
-    folder = creatDir(BC, J, D, L, P, m, phys)
-    name = creatName(BC, J, D, L, P, m, phys)
-    # print( f"folder[4]:{folder[4]}")
-    dimerDisBase = folder[5] + "/" + name[5]
-    context = "dimerization\n"
-    for i, value in enumerate(zllist):
-        context += f"{value}\n"
-    if context == "dimerization\n":
-        return
-    else:
-        if not os.path.exists(dimerDisBase):
-            os.makedirs(os.path.dirname(dimerDisBase), exist_ok=True)
-        with open(zlDisBase, "w") as targetFile:
-            targetFile.write(context)
-
-def save_dimer(BC, J, D, L, P, m, phys, path=None):
-    dimerization, sample, error = dimerAverage(BC, J, D, L, P, m, phys, path)
-    if dimerization == False:
-        print(f"Error: No data found for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
-        return
-    folder = creatDir(BC, J, D, L, P, m, phys)
-    name = creatName(BC, J, D, L, P, m, phys)
-    # print( f"folder[4]:{folder[4]}")
-    myTarPath = folder[4] + "/" + name[4]
-
-    if not os.path.exists(myTarPath):
-        os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
-    with open(myTarPath, "w") as targetFile:
-        targetFile.write(f"dimerization, sample, errorbar\n{dimerization}, {sample}, {error/math.sqrt(sample)}")    
 
 
 
@@ -498,6 +431,78 @@ def save_corr(BC, J, D, L, P, m, phys, path=None):
             os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
         with open(myTarPath, "w") as targetFile:
             targetFile.write(context)
+
+def dimerAverage(BC, J, D, L, P, m, phys, path=None):
+    folder = creatDir(BC, J, D, L, P, m, phys)
+    name = creatName(BC, J, D, L, P, m, phys)
+    myTarPath = folder[2] + "/" + name[2]
+    if path is not None:
+        myTarPath = path
+    dimerlist = []
+    
+    try:
+        if not os.path.exists(myTarPath):
+            raise FileNotFoundError
+        auto_delete_empty = True
+        if os.path.getsize(myTarPath) == 0:
+            if auto_delete_empty:
+                os.remove(myTarPath)
+                print(f"[刪除] 空檔案已刪除：{myTarPath}")
+            raise ValueError("檔案為空")
+        with open(myTarPath, "r") as targetFile:
+            dimerlist = targetFile.readlines()
+            if type(dimerlist[0]) == str or dimerlist[0] == "dimerization":
+                del dimerlist[0]
+        dimerlist = [float(line.split(":")[-1]) for line in dimerlist]
+        if not dimerlist:
+            if auto_delete_empty:
+                os.remove(myTarPath)
+                print(f"[刪除] 空檔案已刪除：{myTarPath}")
+            raise ValueError("檔案內容為空")
+    except FileNotFoundError:
+        print(f"File not found: {myTarPath}")
+        return False, False, False
+    except ValueError as e:
+        print(f"跳過空檔案: {BC}, {J}, {D}, {L}, {P}, {m}, {phys} → {e}")
+        return False, False, False
+    save_dimerDistribute(dimerlist, BC, J, D, L, P, m, phys, myTarPath)
+    dimerAve = np.mean(dimerlist)
+    sample = len(dimerlist)
+    error = np.std(dimerlist, ddof=1)
+
+    return dimerAve, sample, error
+
+def save_dimerDistribute(zllist, BC, J, D, L, P, m, phys, path=None):
+    folder = creatDir(BC, J, D, L, P, m, phys)
+    name = creatName(BC, J, D, L, P, m, phys)
+    # print( f"folder[4]:{folder[4]}")
+    dimerDisBase = folder[5] + "/" + name[5]
+    context = "dimerization\n"
+    for i, value in enumerate(zllist):
+        context += f"{value}\n"
+    if context == "dimerization\n":
+        return
+    else:
+        if not os.path.exists(dimerDisBase):
+            os.makedirs(os.path.dirname(dimerDisBase), exist_ok=True)
+        with open(zlDisBase, "w") as targetFile:
+            targetFile.write(context)
+
+def save_dimer(BC, J, D, L, P, m, phys, path=None):
+    dimerization, sample, error = dimerAverage(BC, J, D, L, P, m, phys, path)
+    if dimerization == False:
+        print(f"Error: No data found for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
+        return
+    folder = creatDir(BC, J, D, L, P, m, phys)
+    name = creatName(BC, J, D, L, P, m, phys)
+    # print( f"folder[4]:{folder[4]}")
+    myTarPath = folder[4] + "/" + name[4]
+
+    if not os.path.exists(myTarPath):
+        os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
+    with open(myTarPath, "w") as targetFile:
+        targetFile.write(f"dimerization, sample, errorbar\n{dimerization}, {sample}, {error/math.sqrt(sample)}")    
+
 
 
 def ZLAverage(BC, J, D, L, P, m, phys, path=None):
