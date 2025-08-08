@@ -422,19 +422,19 @@ class para:
     def setCoreNum(self):
         para=paraList1(self.para["L"],self.para["J"],self.para["D"],self.para["S"])
         if self.para["task"] == "collect":
-            print(self.para["L"])
-            print(self.para["J"])
-            print(self.para["D"])
+            # print(self.para["L"])
+            # print(self.para["J"])
+            # print(self.para["D"])
             self.coreNum = len(para.L_num)*len(para.J_num)*len(para.D_num)*self.para["S"]["dS"]
             # self.print_param("para.L_num", para.L_num)
             # self.print_param("para.J_num", para.J_num)
             # self.print_param("para.D_num", para.D_num)
             print(f"Totalcore = {len(para.L_num)} * {len(para.J_num)} * {len(para.D_num)} = {self.coreNum}")
         if self.para["task"] == "submit":
-            print(self.para["L"])
-            print(self.para["J"])
-            print(self.para["D"])
-            print(self.para["S"])
+            # print(self.para["L"])
+            # print(self.para["J"])
+            # print(self.para["D"])
+            # print(self.para["S"])
             self.coreNum = len(para.L_num)*len(para.J_num)*len(para.D_num)*self.para["S"]["dS"]
         
             # self.print_param("para.L_num", para.L_num)

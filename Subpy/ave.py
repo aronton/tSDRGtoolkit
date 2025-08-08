@@ -208,7 +208,7 @@ def Combine(BC, J, D, L, P, m, phys, s1, s2):
                 shutil.copy(mySource, groupSource)
                 fcontext = fread(groupSource, phys)
         elif os.path.exists(mySource):
-            os.makedirs(os.path.dirname(groupSource), exist_ok=True)
+            # os.makedirs(os.path.dirname(groupSource), exist_ok=True)
             shutil.copy(mySource, groupSource)
             # os.remove(mySource)
             fcontext = fread(groupSource, phys)

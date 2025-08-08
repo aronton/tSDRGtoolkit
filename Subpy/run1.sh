@@ -46,9 +46,21 @@ done < "$FILE"
 echo "parameterfile : $FILE"
 echo "The working directory : $PWD"
 
+# 全域變數控制是否使用 Slurm 排程、是否印出指令
+use_slurm=$2
+
 run_and_print() {
-    echo "[執行指令] $*"
-    "$@"
+    local cmd=("$@")  # 將傳入的所有參數組成陣列
+
+    if $print_cmd; then
+        echo "[執行指令] ${cmd[*]}"
+    fi
+
+    if $use_slurm; then
+        srun --ntasks=1 --nodes=1 --cpus-per-task=1 --exclusive "${cmd[@]}"
+    else
+        "${cmd[@]}"
+    fi
 }
 
 
@@ -66,9 +78,20 @@ if [ ! -f "$FILE" ]; then
 fi
 
 # 逐行讀取並顯示檔案內容
+task=""
+
 while IFS= read -r line || [ -n "$line" ]; do
+    IFS=':' read -r part1 part2 <<< "$line"
+
     echo "$line"
+
+    if [ "$part1" == "task" ]; then
+        task="$part2"
+        echo "✅ 偵測到 'task'，設定 task=$task"
+    fi
+
 done < "$FILE"
+
 
 
 # 確保變數都有值
@@ -88,37 +111,43 @@ echo -e "$rows"
 echo -e "$cols"
 # 初始化二維陣列（用一維陣列模擬）
 # array=()
+if [ "$task" == "submit" ]; then
+    # 輸出二維陣列的內容
+    for ((i=0; i<cols; i++)); do
+        echo -e "Round${i} start $(date)\n\n"
+        s1_combine=$((s1 - 1 + i * rows + 1))
+        # echo "s1_combine:${s1_combine}"
 
-# 輸出二維陣列的內容
-for ((i=0; i<cols; i++)); do
-    echo -e "Round${i} start $(date)\n\n"
-    s1_combine=$((s1 - 1 + i * rows + 1))
-    # echo "s1_combine:${s1_combine}"
+        start=$SECONDS
 
-    start=$SECONDS
+        for ((j=0; j<rows; j++)); do
+            index=$((s1 - 1 + i * rows + j + 1))
+            if [[ $j -eq 0 || $j -eq $((rows - 1)) ]]; then
+                print_cmd=true
+                run_and_print ./spin15_run.exe ${FILE} ${index} ${index} &
+            else
+                print_cmd=false
+            # echo "srun --overlap --exclusive --nodes=1 --ntasks=1 --cpus-per-task=1 ./spin150531.exe ${FILE} ${index} ${index} &"
+                run_and_print  ./spin15_run.exe ${FILE} ${index} ${index} &
+            fi 
+        done
+        s2_combine=$((s1 - 1 + (i+1) * rows ))
+        # echo "s2_combine:${s2_combine}"
+        wait
+        elapsed=$(( SECONDS - start ))
+        echo -e "Round${i} elapsed: $elapsed seconds\n\n"
+        print_cmd=true
+        # echo "python /dicos_ui_home/aronton/tSDRG_random/Subpy/combine.py ""${FILE}"" ${s1_combine}"" ${s2_combine}"
+        run_and_print python ${tSDRGpath}/Subpy/combine.py "${FILE}" "${s1_combine}" "${s2_combine}"
+        run_and_print python ${tSDRGpath}/Subpy/ave.py "${FILE}" "${s1_combine}" "${s2_combine}"
 
-    for ((j=0; j<rows; j++)); do
-        index=$((s1 - 1 + i * rows + j + 1))
-        if [[ $j -eq 0 || $j -eq $((rows - 1)) ]]; then
-            run_and_print srun --ntasks=1 --nodes=1 --cpus-per-task=1 --exclusive  ./spin15_run.exe ${FILE} ${index} ${index} &
-        else
-        # echo "srun --overlap --exclusive --nodes=1 --ntasks=1 --cpus-per-task=1 ./spin150531.exe ${FILE} ${index} ${index} &"
-            srun  --ntasks=1 --nodes=1 --cpus-per-task=1 --exclusive  ./spin15_run.exe ${FILE} ${index} ${index} &
-        fi 
+        echo "Round${i} finished $(date)\n\n"
     done
-    s2_combine=$((s1 - 1 + (i+1) * rows ))
-    # echo "s2_combine:${s2_combine}"
-    wait
-    elapsed=$(( SECONDS - start ))
-    echo -e "Round${i} elapsed: $elapsed seconds\n\n"
-
-    # echo "python /dicos_ui_home/aronton/tSDRG_random/Subpy/combine.py ""${FILE}"" ${s1_combine}"" ${s2_combine}"
-    run_and_print python ${tSDRGpath}/Subpy/combine.py "${FILE}" "${s1_combine}" "${s2_combine}"
-    run_and_print python ${tSDRGpath}/Subpy/ave.py "${FILE}" "${s1_combine}" "${s2_combine}"
-
-    echo "Round${i} finished $(date)\n\n"
-done
+else
+    # 否則，執行這段
+    run_and_print python ${tSDRGpath}/Subpy/combine.py "${FILE}" 1 "${s2}"
+    run_and_print python ${tSDRGpath}/Subpy/ave.py "${FILE}" 1 "${s2}"
+fi
 # python /dicos_ui_home/aronton/tSDRG_random/Subpy/combine.py ${FILE}
-run_and_print python ${tSDRGpath}/Subpy/combine.py "${FILE}" 1 "${s2}"
-run_and_print python ${tSDRGpath}/Subpy/ave.py "${FILE}" 1 "${s2}"
+
 echo "Job finished $(date)"

@@ -229,12 +229,10 @@ def sort_if_needed(context):
 def Combine(BC, J, D, L, P, m, phys, s1, s2):
     folder = creatDir(BC, J, D, L, P, m, phys)
     name = creatName(BC, J, D, L, P, m, phys)
-
     mySourcePath = folder[0] + "/" + name[0]
     groupSourcePath = folder[1] + "/" + name[1]
     myTarPath = folder[2] + "/" + name[2]
     groupTarPath = folder[3] + "/" + name[3]
-
     seedArray = list(range(s1, s2 + 1))
     # with open(groupTarPath, "r") as originFile:
     #     originaText = originFile.readlines()
@@ -253,7 +251,7 @@ def Combine(BC, J, D, L, P, m, phys, s1, s2):
                 shutil.copy(mySource, groupSource)
                 fcontext = fread(groupSource, phys)
         elif os.path.exists(mySource):
-            os.makedirs(os.path.dirname(groupSource), exist_ok=True)
+            # os.makedirs(os.path.dirname(groupSource), exist_ok=True)
             shutil.copy(mySource, groupSource)
             # os.remove(mySource)
             fcontext = fread(groupSource, phys)
@@ -374,11 +372,14 @@ if __name__ == "__main__":
     file = sys.argv[1]
     arg = []
     # Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(int(J),int(J)+1)]
-    # Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(30,81,50)]
+    # Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(10,201,10)]
 
     # Dstr = [f"Dim{str(i).zfill(3)}" for i in range(101)]
     # Lstr = [f"L{num}" for num in range(31, 255, 32)]  # 只有 L512
-    # Lstr = [f"L{num}" for num in range(64, 129, 64)]  # 只有 L512
+    # Lstr = [f"L{num}" for num in range(8, 512, 8)]  # 只有 L512
+    # BC = "OBC"
+    # Pdis = "20"
+    # chi = "40"
     a = scriptCreator.para("read",file)
     parameterlist = a.para
     para=scriptCreator.paraList1(parameterlist["L"],parameterlist["J"],parameterlist["D"],parameterlist["S"])
@@ -393,19 +394,23 @@ if __name__ == "__main__":
         s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
     else:
         s_list = ["ZL","corr1","corr2","J_list","energy","dimerization","w_loc","seed"]
-        
+    # s1 = 1
+    # s2 = 10000    
+    # for s in s_list:
+    #     for L in para.L_str:
+    #         for J in para.J_str:
+    #                 arg.append((BC, J, para.D_str[0], L, f"P{Pdis}", f"m{chi}", s, s1, s2))
     for s in s_list:
         for L in para.L_str:
-            for J in para.J_str:
-                    arg.append((BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", s, s1, s2))
-
-    print(arg)         
-
+            for D in para.D_str:
+                for J in para.J_str:
+                    arg.append((BC, J, D, L, f"P{Pdis}", f"m{chi}", s, s1, s2))
+    print(s_list, para.L_str, para.J_str, para.D_str, Pdis, chi, BC, s1, s2)  
     def fun(arg):
         print("---------------------col--------------------\n")
-        with multiprocessing.Pool(processes=10) as pool:
+
+        with multiprocessing.Pool(processes=1) as pool:
             results1 = pool.starmap(Combine, arg)
-        # print("---------------------del--------------------\n")
         # with multiprocessing.Pool(processes=20) as pool:
         #     results1 = pool.starmap(checkAndDelete, arg)
             
