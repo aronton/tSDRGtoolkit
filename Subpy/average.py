@@ -35,10 +35,10 @@ def submitPara(parameterlist, tSDRG_path):
     
 
     
-    print("L_num:",L_num)
-    print("L_p_num:",L_p_num)
-    print("L_str:",L_str)
-    print("L_p_str:",L_p_str)
+    # print("L_num:",L_num)
+    # print("L_p_num:",L_p_num)
+    # print("L_str:",L_str)
+    # print("L_p_str:",L_p_str)
 
     S_num = para.S_num
     S_str = para.S_str
@@ -56,12 +56,12 @@ def submitPara(parameterlist, tSDRG_path):
     J_p_s100 = para.J_p_s100
 
 
-    print("J_num",J_num)
-    print("J_p_num",J_p_num)
-    print("J_str:",J_str)
-    print("J_p_str:",J_p_str)
-    print("J_s100:",J_s100)
-    print("J_p_s100:",J_p_s100)
+    # print("J_num",J_num)
+    # print("J_p_num",J_p_num)
+    # print("J_str:",J_str)
+    # print("J_p_str:",J_p_str)
+    # print("J_s100:",J_s100)
+    # print("J_p_s100:",J_p_s100)
     
     D_num = para.D_num
     D_p_num = para.D_p_num
@@ -70,12 +70,12 @@ def submitPara(parameterlist, tSDRG_path):
     D_s100 = para.D_s100
     D_p_s100 = para.D_p_s100
 
-    print("D_num:",D_num)
-    print("D_p_num:",D_p_num)
-    print("D_str:",D_str)
-    print("D_p_str:",D_p_str)
-    print("D_s100:",D_s100)
-    print("D_p_s100:",D_p_s100)
+    # print("D_num:",D_num)
+    # print("D_p_num:",D_p_num)
+    # print("D_str:",D_str)
+    # print("D_p_str:",D_p_str)
+    # print("D_s100:",D_s100)
+    # print("D_p_s100:",D_p_s100)
     Spin=parameterlist["Spin"]
     Pdis=parameterlist["Pdis"]
     chi=parameterlist["chi"]
@@ -107,6 +107,7 @@ def submitPara(parameterlist, tSDRG_path):
                 name = ["Spin"+str(Spin),L,J,D,"P"+str(Pdis),"BC="+BC,"chi"+str(chi),"partition="+str(partition),"seed1="+str(s1),"seed2="+str(s2),"ds="+str(ds),"task="+task]
                 name = "_".join(name)
                 jobNamelist.append(name)
+                argvlist.append((Spin, L_num[l], J_num[j], D_num[d], 10, BC, chi, partition, s1, s2, ds, task))
     return (jobNamelist, argvlist)           
 
 # edit script & submit task
@@ -142,7 +143,7 @@ def EditandSub(paraPath,script_path,output_path,jobName):
         with open("run1.sh", 'r') as file:
             content = file.read()
     if task == "collect":
-        with open("runCollect.sh", 'r') as file:
+        with open("run1.sh", 'r') as file:
             content = file.read()
     # 依據 replacements 替換文字
     for old_text, new_text in replacements.items():
@@ -259,13 +260,13 @@ def submit(parameterlist, tSDRG_path, jobNamelist=None):
         
 
     record_dir = tSDRG_path + "/tSDRG" + "/Main_" + str(Spin) + "/jobRecord" 
-    if parameterlist["task"] == "collect":
-    # record_dir = tSDRG_path + "/tSDRG" + "/Main_" + str(Spin) + "/jobRecord" 
-        script_dir = record_dir + "/collect_script" + "/" + str(BC) + "/B" + str(chi)
-        output_dir = record_dir + "/collect_slurmOutput" + "/" + str(BC) + "/B" + str(chi)
-    else:
-        script_dir = record_dir + "/script" + "/" + str(BC) + "/B" + str(chi)
-        output_dir = record_dir + "/slurmOutput" + "/" + str(BC) + "/B" + str(chi)
+    # if parameterlist["task"] == "collect":
+    # # record_dir = tSDRG_path + "/tSDRG" + "/Main_" + str(Spin) + "/jobRecord" 
+    #     script_dir = record_dir + "/collect_script" + "/" + str(BC) + "/B" + str(chi)
+    #     output_dir = record_dir + "/collect_slurmOutput" + "/" + str(BC) + "/B" + str(chi)
+    # else:
+    script_dir = record_dir + "/script" + "/" + str(BC) + "/B" + str(chi)
+    output_dir = record_dir + "/slurmOutput" + "/" + str(BC) + "/B" + str(chi)
     nt=datetime.datetime.now()
     now_year = str(nt.year)
     now_date = str(nt.year) + "_" + str(nt.month) + "_" + str(nt.day)
@@ -707,7 +708,6 @@ def main():
     elif task == "check" or task == "f":
         Distribution(parameterlist)
     elif task == "collect" or task == "g":
-        if 
         tasklist = submitPara(parameterlist, tSDRG_path)
         submit(parameterlist, tSDRG_path)
     elif task == "average" or task == "h":

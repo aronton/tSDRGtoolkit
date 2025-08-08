@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "/ceph/sharedfs/work/NTHU-qubit/LYT/tSDRG_random/Subpy/cb.py", line 10, in <module>
-    import scriptCreator
-  File "/ceph/sharedfs/work/NTHU-qubit/LYT/tSDRG_random/Subpy/scriptCreator.py", line 442
-    print(f"Totalcore = {len(para.L_num)} * {len(para.J_num)} * {len(para.D_num)} * {self.para["S"]["dS"]} = {self.coreNum}")
-                                                                                                ^
-SyntaxError: f-string: unmatched '['

@@ -47,7 +47,7 @@ echo "parameterfile : $FILE"
 echo "The working directory : $PWD"
 
 # 全域變數控制是否使用 Slurm 排程、是否印出指令
-use_slurm=true
+use_slurm=$2
 
 run_and_print() {
     local cmd=("$@")  # 將傳入的所有參數組成陣列
@@ -128,7 +128,7 @@ if [ "$task" == "submit" ]; then
             else
                 print_cmd=false
             # echo "srun --overlap --exclusive --nodes=1 --ntasks=1 --cpus-per-task=1 ./spin150531.exe ${FILE} ${index} ${index} &"
-                run_and_print  --ntasks=1 --nodes=1 --cpus-per-task=1 --exclusive  ./spin15_run.exe ${FILE} ${index} ${index} &
+                run_and_print  ./spin15_run.exe ${FILE} ${index} ${index} &
             fi 
         done
         s2_combine=$((s1 - 1 + (i+1) * rows ))
@@ -136,7 +136,7 @@ if [ "$task" == "submit" ]; then
         wait
         elapsed=$(( SECONDS - start ))
         echo -e "Round${i} elapsed: $elapsed seconds\n\n"
-
+        print_cmd=true
         # echo "python /dicos_ui_home/aronton/tSDRG_random/Subpy/combine.py ""${FILE}"" ${s1_combine}"" ${s2_combine}"
         run_and_print python ${tSDRGpath}/Subpy/combine.py "${FILE}" "${s1_combine}" "${s2_combine}"
         run_and_print python ${tSDRGpath}/Subpy/ave.py "${FILE}" "${s1_combine}" "${s2_combine}"
