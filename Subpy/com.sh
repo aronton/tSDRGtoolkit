@@ -8,6 +8,6 @@
 
 
 echo "開始時間: $(date)"
-python3 com_old.py
+python3 combine1.py
 echo "結束時間: $(date)"
 
