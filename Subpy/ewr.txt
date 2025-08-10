@@ -1,0 +1,16 @@
+What is the task? (a)submit, (b)show, (c)cancel Jobs, (d)change (e)distribution: (f)check: (g)collect: 
+Traceback (most recent call last):
+  File "/home/aronton/tSDRG_random/Subpy/average.py", line 719, in <module>
+    main()
+  File "/home/aronton/tSDRG_random/Subpy/average.py", line 627, in main
+    task = input("What is the task? (a)submit, (b)show, (c)cancel Jobs, (d)change (e)distribution: (f)check: (g)collect: \n")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 9] Bad file descriptor
+What is the task? (a)submit, (b)show, (c)cancel Jobs, (d)change (e)distribution: (f)check: (g)collect: 
+Traceback (most recent call last):
+  File "/home/aronton/tSDRG_random/Subpy/average.py", line 719, in <module>
+    main()
+  File "/home/aronton/tSDRG_random/Subpy/average.py", line 627, in main
+    task = input("What is the task? (a)submit, (b)show, (c)cancel Jobs, (d)change (e)distribution: (f)check: (g)collect: \n")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 9] Bad file descriptor

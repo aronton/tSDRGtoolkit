@@ -57,6 +57,7 @@ metalist = {
     "energy":"_".join(["gap","L_re","P_re","m_re","J_re","D_re.txt"]),\
     "corr1":"_".join(["corr1","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
     "corr2":"_".join(["corr2","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
+    "dimerization":"_".join(["dimerization","L_re","P_re","m_re","J_re","D_re.txt"])
     }
 
 metaDislist = {
@@ -64,6 +65,7 @@ metaDislist = {
     "energy":"_".join(["gap_dis","L_re","P_re","m_re","J_re","D_re.txt"]),\
     "corr1":"_".join(["corr1_dis","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
     "corr2":"_".join(["corr2_dis","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
+    "dimerization":"_".join(["dimerization_dis","L_re","P_re","m_re","J_re","D_re.txt"])
     }
 
 
@@ -328,7 +330,7 @@ def save_dimerDistribute(zllist, BC, J, D, L, P, m, phys, path=None):
     else:
         if not os.path.exists(dimerDisBase):
             os.makedirs(os.path.dirname(dimerDisBase), exist_ok=True)
-        with open(zlDisBase, "w") as targetFile:
+        with open(dimerDisBase, "w") as targetFile:
             targetFile.write(context)
 
 def save_dimer(BC, J, D, L, P, m, phys, path=None):
@@ -345,7 +347,7 @@ def save_dimer(BC, J, D, L, P, m, phys, path=None):
         os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
     with open(myTarPath, "w") as targetFile:
         targetFile.write(f"dimerization, sample, errorbar\n{dimerization}, {sample}, {error/math.sqrt(sample)}")    
-
+    print(f"dimerization, sample, errorbar\n{dimerization}, {sample}, {error/math.sqrt(sample)} for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
 
 
 def gapAverage(BC, J, D, L, P, m, phys, path=None):
@@ -409,6 +411,7 @@ def save_gap(BC, J, D, L, P, m, phys, path=None):
         os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
     with open(myTarPath, "w") as targetFile:
         targetFile.write(f"ground_state_energy, sample, errorbar\n{gapAve}, {sample}, {error/math.sqrt(sample)}")
+    print(f"ground_state_energy, sample, errorbar\n{gapAve}, {sample}, {error/math.sqrt(sample)} for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
             
 def corrAverage(BC, J, D, L, P, m, phys, path=None):
     folder = creatDir(BC, J, D, L, P, m, phys)
@@ -498,7 +501,8 @@ def save_corr(BC, J, D, L, P, m, phys, path=None):
             os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
         with open(myTarPath, "w") as targetFile:
             targetFile.write(context)
-
+        print(f"C_bulk=<S(0)S(dx={key})>,sample,errorbar\n" + f"{corr[key]},{sample[key]},{error[key]/math.sqrt(sample[key])} for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
+            
 
 def ZLAverage(BC, J, D, L, P, m, phys, path=None):
     folder = creatDir(BC, J, D, L, P, m, phys)
@@ -570,6 +574,7 @@ def save_ZL(BC, J, D, L, P, m, phys, path=None):
         os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
     with open(myTarPath, "w") as targetFile:
         targetFile.write(f"ZL, sample, errorbar\n{zlAve}, {sample}, {error/math.sqrt(sample)}")    
+    print(f"ZL, sample, errorbar\n{zlAve}, {sample}, {error/math.sqrt(sample)} for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
 
 def list_txt_files(directory):
     txt_files = []
@@ -591,12 +596,12 @@ if __name__ == "__main__":
     chi = "m" + str(parameterlist["chi"])
     s1 = int(sys.argv[2])
     s2 = int(sys.argv[3])
-    if BC == "PBC":
-        s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
-        s_list = ["corr1","corr2"]
-    else:
-        s_list = ["ZL","corr1","corr2","J_list","energy","dimerization","w_loc","seed"]
-        s_list = ["corr1","corr2"]
+    # if BC == "PBC":
+    #     s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
+    #     s_list = ["corr1","corr2"]
+    # else:
+    #     s_list = ["ZL","corr1","corr2","J_list","energy","dimerization","w_loc","seed"]
+    #     s_list = ["corr1","corr2"]
         
     # for s in s_list:
     for D in para.D_str:
