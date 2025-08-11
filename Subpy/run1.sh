@@ -21,7 +21,6 @@ if [ -d "${scopionPath}/tSDRG/Main_15" ]; then
     tSDRGpath="${scopionPath}"
     cd "${tSDRGpath}/tSDRG/Main_15"
     echo "working on scopion"
-
 elif [ -d "${dicosPath}/tSDRG/Main_15" ]; then
     tSDRGpath="${dicosPath}"
     cd "${tSDRGpath}/tSDRG/Main_15"
@@ -48,6 +47,13 @@ echo "The working directory : $PWD"
 
 # 全域變數控制是否使用 Slurm 排程、是否印出指令
 use_slurm=$2
+<<<<<<< HEAD
+=======
+use_slurm="true"
+if [ "$use_slurm" == true ]; then
+    echo "use_slurm : $use_slurm"
+fi
+>>>>>>> 6294652 (amend fi)
 
 run_and_print() {
     local cmd=("$@")  # 將傳入的所有參數組成陣列
