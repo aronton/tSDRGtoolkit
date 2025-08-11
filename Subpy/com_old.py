@@ -482,6 +482,7 @@ def sort_if_needed(context):
 def Combine(BC, J, D, L, P, m, phys, s1, s2):
     folder = creatDir(BC, J, D, L, P, m, phys)
     name = creatName(BC, J, D, L, P, m, phys)
+
     mySourcePath = folder[0] + "/" + name[0]
     groupSourcePath = folder[1] + "/" + name[1]
     myTarPath = folder[2] + "/" + name[2]
@@ -505,7 +506,7 @@ def Combine(BC, J, D, L, P, m, phys, s1, s2):
                 shutil.copy(mySource, groupSource)
                 fcontext = fread(groupSource, phys)
         elif os.path.exists(mySource):
-            os.makedirs(os.path.dirname(groupSource), exist_ok=True)
+            # os.makedirs(os.path.dirname(groupSource), exist_ok=True)
             shutil.copy(mySource, groupSource)
             # os.remove(mySource)
             fcontext = fread(groupSource, phys)
@@ -519,7 +520,7 @@ def Combine(BC, J, D, L, P, m, phys, s1, s2):
 
     if context != "":
         context, s1 = sort_if_needed(context)
-        save_ZL(BC, J, D, L, P, m, phys, context)
+        
         save_context(context, s1, groupTarPath, myTarPath, phys)
         # os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
 
@@ -527,50 +528,27 @@ def Combine(BC, J, D, L, P, m, phys, s1, s2):
 def save_context(context, s1, groupTarPath, myTarPath, phys):
     if not os.path.exists(groupTarPath):
         os.makedirs(os.path.dirname(groupTarPath), exist_ok=True)
+
+    mode = "w" if s1 == 1 else "a"
+
     if s1 == 1:
         context = f"{phys}\n{context}"
-        # print(f"[WRITE] groupTarPath: {groupTarPath}, myTarPath: {myTarPath}")
-        with open(groupTarPath, "w") as f1:
-            
-            try:
-                # 嘗試用非阻塞方式加鎖
-                fcntl.flock(f1, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                print("✅ 立即取得鎖")
-                print(f"檔案已鎖定 [WRITE] groupTarPath: {groupTarPath}, s1:{s1}, 目前進程 PID: {os.getpid()}")
-                f1.write(context)
-                fcntl.flock(f1, fcntl.LOCK_EX | fcntl.LOCK_UN)
-                print("✅ 檔案已解鎖")    
-            except BlockingIOError:
-                print("⏳ 檔案已被鎖住，進入等待模式...")
-                fcntl.flock(f1, fcntl.LOCK_EX)  # 這裡才會阻塞，等釋放
-                print("✅ 最終取得鎖")
-                print(f"檔案已鎖定 [WRITE] groupTarPath: {groupTarPath}, s1:{s1}, 目前進程 PID: {os.getpid()}")
-                f1.write(context)
-                fcntl.flock(f1, fcntl.LOCK_UN)
-                print("✅ 檔案已解鎖")            # f2.write(context)
-        # with open(groupTarPath, "w") as f1, open(myTarPath, "w") as f2:
-        #     f1.write(context)
-        #     # f2.write(context)
-    else:
-        # print(f"[APPEND] groupTarPath: {groupTarPath}, myTarPath: {myTarPath}")
-        with open(groupTarPath, "a") as f1:
-            
-            try:
-                # 嘗試用非阻塞方式加鎖
-                fcntl.flock(f1, fcntl.LOCK_EX)
-                print("✅ 立即取得鎖")
-                print(f"檔案已鎖定 [APPEND] groupTarPath: {groupTarPath}, s1:{s1}, 目前進程 PID: {os.getpid()}")
-                f1.write(context)
-                fcntl.flock(f1, fcntl.LOCK_UN)
-                print("✅ 檔案已解鎖")    
-            except BlockingIOError:
-                print("⏳ 檔案已被鎖住，進入等待模式...")
-                fcntl.flock(f1, fcntl.LOCK_EX)  # 這裡才會阻塞，等釋放
-                print("✅ 最終取得鎖")
-                print(f"檔案已鎖定 [APPEND] groupTarPath: {groupTarPath}, s1:{s1}, 目前進程 PID: {os.getpid()}")
-                f1.write(context)
-                fcntl.flock(f1, fcntl.LOCK_UN)
-                print("✅ 檔案已解鎖") 
+
+    with open(groupTarPath, mode) as f1:
+        try:
+            # 嘗試非阻塞加鎖
+            fcntl.flock(f1, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            print(f"✅ 立即取得鎖 [PID {os.getpid()}] ({'WRITE' if s1==1 else 'APPEND'}): {groupTarPath}")
+        except BlockingIOError:
+            print(f"⏳ 鎖住等待中 [PID {os.getpid()}] → {groupTarPath}")
+            fcntl.flock(f1, fcntl.LOCK_EX)
+            print(f"✅ 最終取得鎖 [PID {os.getpid()}]")
+
+        try:
+            f1.write(context)
+        finally:
+            fcntl.flock(f1, fcntl.LOCK_UN)
+            print(f"🔓 檔案已解鎖 [PID {os.getpid()}] → {groupTarPath}")
     
 
         

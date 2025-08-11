@@ -54,14 +54,14 @@ tarlist = {
 
 metalist = {
     "ZL":"_".join(["ZL","L_re","P_re","m_re","J_re","D_re.txt"]),\
-    "gap":"_".join(["energy","L_re","P_re","m_re","J_re","D_re.txt"]),\
+    "energy":"_".join(["gap","L_re","P_re","m_re","J_re","D_re.txt"]),\
     "corr1":"_".join(["corr1","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
     "corr2":"_".join(["corr2","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
     }
 
 metaDislist = {
     "ZL":"_".join(["ZL_dis","L_re","P_re","m_re","J_re","D_re.txt"]),\
-    "gap":"_".join(["gap_dis","L_re","P_re","m_re","J_re","D_re.txt"]),\
+    "energy":"_".join(["gap_dis","L_re","P_re","m_re","J_re","D_re.txt"]),\
     "corr1":"_".join(["corr1_dis","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
     "corr2":"_".join(["corr2_dis","L_re","P_re","m_re","J_re","D_re","dx_re.txt"]),\
     }
@@ -156,7 +156,7 @@ def save_gapDistribute(gaplist, BC, J, D, L, P, m, phys):
 def save_gap(BC, J, D, L, P, m, phys):
     gapAve, sample, error = gapAverage(BC, J, D, L, P, m, phys)
     if gapAve == False:
-        print(f"Error: No data found for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
+        # print(f"Error: No data found for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
         return
     folder = creatDir(BC, J, D, L, P, m, phys)
     name = creatName(BC, J, D, L, P, m, phys)
@@ -166,8 +166,100 @@ def save_gap(BC, J, D, L, P, m, phys):
     if not os.path.exists(myTarPath):
         os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
     with open(myTarPath, "w") as targetFile:
-        targetFile.write(f"ground_state_energy, sample, error\n{gapAve}, {sample}, {error/math.sqrt(sample)}")
-            
+        targetFile.write(f"ground_state_energy, sample, errorbar\n{gapAve}, {sample}, {error/math.sqrt(sample)}")
+
+# def corrAverage(BC, J, D, L, P, m, phys, path=None):
+#     folder = creatDir(BC, J, D, L, P, m, phys)
+#     name = creatName(BC, J, D, L, P, m, phys)
+#     myTarPath = folder[2] + "/" + name[2]
+#     if path is not None:
+#         myTarPath = path
+#     corrDic = {}
+#     try:
+#         with open(myTarPath, "r") as targetFile:
+#             collect = targetFile.readlines()
+#             collect = [line.strip() for line in collect]
+#             if collect and collect[0] == "corr1":
+#                 del collect[0]
+#             for line in collect:
+#                 line = line.split(":")[-1].split(" ")
+#                 for data in line:
+#                     if data:
+#                         parts = data.split(",")
+#                         if len(parts) >= 3:
+#                             try:
+#                                 x1, x2 = int(parts[0]), int(parts[1])
+#                                 corr = float(parts[2])
+#                                 key = x2 - x1
+#                                 if key not in corrDic:
+#                                     corrDic[key] = []
+#                                 corrDic[key].append(corr)
+#                             except ValueError:
+#                                 continue  # 忽略無法轉換的數據
+#     except FileNotFoundError:
+#         print(f"File not found: {myTarPath}")
+#         return False, False, False
+#     save_corrDistribute(corrDic, BC, J, D, L, P, m, phys)
+#     corr = {}
+#     sample = {}
+#     error = {}
+#     for key, values in corrDic.items():
+#         sample[key] = len(values)
+#         corr[key] = np.mean(values)
+#         error[key] = np.std(values, ddof=1) if len(values) > 1 else 0.0
+
+#     return corr, sample, error
+
+# def save_corrDistribute(corrDic, BC, J, D, L, P, m, phys, path=None):
+#     folder = creatDir(BC, J, D, L, P, m, phys)
+#     name = creatName(BC, J, D, L, P, m, phys)
+#     # print( f"folder[4]:{folder[4]}")
+#     corrDisBase = folder[5] + "/" + name[5]
+#     for key, values in list(corrDic.items()):
+#         context = ""
+#         if BC == "OBC":
+#             context = f"C_etoe=<S(0)S(dx={key})>\n"
+#         elif BC == "PBC":
+#             context = f"C_bulk=<S(0)S(dx={key})>\n"
+#         corrDisPath = corrDisBase.replace("dx_re", f"dx={key}")
+#         for value in values:
+#             context += f"{value}\n"
+        
+#         if context == f"C_etoe=<S(0)S(dx={key})>\n" or context ==  f"C_bulk=<S(0)S(dx={key})>\n":
+#             continue
+#         else:
+#             if not os.path.exists(corrDisPath):
+#                 os.makedirs(os.path.dirname(corrDisPath), exist_ok=True)
+#             with open(corrDisPath, "w") as targetFile:
+#                 targetFile.write(context)
+#         print(f"context:{context}")
+
+# def save_corr(BC, J, D, L, P, m, phys, path=None):
+#     corr, sample, error = corrAverage(BC, J, D, L, P, m, phys, path)
+#     if corr == False:
+#         print(f"Error: No data found for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
+#         return
+#     folder = creatDir(BC, J, D, L, P, m, phys)
+#     name = creatName(BC, J, D, L, P, m, phys)
+#     # print( f"folder[4]:{folder[4]}")
+#     myTarPathBase = folder[4] + "/" + name[4]
+#     # print(f"myTarPath:{myTarPath}")
+
+#     for key, values in list(corr.items()):
+#         if corr[key] == None:
+#             continue
+#         myTarPath = myTarPathBase.replace("dx_re", f"dx={key}")
+#         if BC == "OBC":
+#             context = f"C_etoe=<S(0)S(dx={key})>,sample,errorbar\n" + f"{corr[key]},{sample[key]},{error[key]/math.sqrt(sample[key])}"
+#         elif BC == "PBC":
+#             context = f"C_bulk=<S(0)S(dx={key})>,sample,errorbar\n" + f"{corr[key]},{sample[key]},{error[key]/math.sqrt(sample[key])}"
+#         if not os.path.exists(myTarPath):
+#             os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
+#         with open(myTarPath, "w") as targetFile:
+#             targetFile.write(context)
+#         print(f"C_bulk=<S(0)S(dx={key})>,sample,errorbar\n" + f"{corr[key]},{sample[key]},{error[key]/math.sqrt(sample[key])} for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
+
+                    
 def corrAverage(BC, J, D, L, P, m, phys):
     folder = creatDir(BC, J, D, L, P, m, phys)
     name = creatName(BC, J, D, L, P, m, phys)
@@ -182,17 +274,18 @@ def corrAverage(BC, J, D, L, P, m, phys):
                 del collect[0]
             for line in collect:
                 line = line.split(":")[-1].split(" ")
+                # print(f"line:{line}")
                 for data in line:
                     if data:
                         parts = data.split(",")
-                        if len(parts) >= 3:
+                        if len(parts) >= 2:
                             try:
-                                x1, x2 = int(parts[0]), int(parts[1])
-                                corr = float(parts[2])
-                                key = x2 - x1
-                                if key not in corrDic:
-                                    corrDic[key] = []
-                                corrDic[key].append(corr)
+                                dx, correlation = int(parts[0]), int(parts[1])
+                                # correlation = float(parts[2])
+                                # key = x2 - x1
+                                if dx not in corrDic:
+                                    corrDic[dx] = []
+                                corrDic[dx].append(correlation)
                             except ValueError:
                                 continue  # 忽略無法轉換的數據
     except FileNotFoundError:
@@ -223,7 +316,6 @@ def save_corrDistribute(corrDic, BC, J, D, L, P, m, phys):
         corrDisPath = corrDisBase.replace("dx_re", f"dx={key}")
         for value in values:
             context += f"{value}\n"
-        
         if context == f"C_etoe=<S(0)S(dx={key})>\n" or context ==  f"C_bulk=<S(0)S(dx={key})>\n":
             continue
         else:
@@ -235,7 +327,7 @@ def save_corrDistribute(corrDic, BC, J, D, L, P, m, phys):
 def save_corr(BC, J, D, L, P, m, phys):
     corr, sample, error = corrAverage(BC, J, D, L, P, m, phys)
     if corr == False:
-        print(f"Error: No data found for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
+        # print(f"Error: No data found for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
         return
     folder = creatDir(BC, J, D, L, P, m, phys)
     name = creatName(BC, J, D, L, P, m, phys)
@@ -255,6 +347,78 @@ def save_corr(BC, J, D, L, P, m, phys):
             os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
         with open(myTarPath, "w") as targetFile:
             targetFile.write(context)
+            
+def dimerAverage(BC, J, D, L, P, m, phys, path=None):
+    folder = creatDir(BC, J, D, L, P, m, phys)
+    name = creatName(BC, J, D, L, P, m, phys)
+    myTarPath = folder[2] + "/" + name[2]
+    if path is not None:
+        myTarPath = path
+    dimerlist = []
+    
+    try:
+        if not os.path.exists(myTarPath):
+            raise FileNotFoundError
+        auto_delete_empty = True
+        if os.path.getsize(myTarPath) == 0:
+            if auto_delete_empty:
+                os.remove(myTarPath)
+                print(f"[刪除] 空檔案已刪除：{myTarPath}")
+            raise ValueError("檔案為空")
+        with open(myTarPath, "r") as targetFile:
+            dimerlist = targetFile.readlines()
+            if type(dimerlist[0]) == str or dimerlist[0] == "dimerization":
+                del dimerlist[0]
+        dimerlist = [float(line.split(":")[-1]) for line in dimerlist]
+        if not dimerlist:
+            if auto_delete_empty:
+                os.remove(myTarPath)
+                print(f"[刪除] 空檔案已刪除：{myTarPath}")
+            raise ValueError("檔案內容為空")
+    except FileNotFoundError:
+        print(f"File not found: {myTarPath}")
+        return False, False, False
+    except ValueError as e:
+        print(f"跳過空檔案: {BC}, {J}, {D}, {L}, {P}, {m}, {phys} → {e}")
+        return False, False, False
+    save_dimerDistribute(dimerlist, BC, J, D, L, P, m, phys, myTarPath)
+    dimerAve = np.mean(dimerlist)
+    sample = len(dimerlist)
+    error = np.std(dimerlist, ddof=1)
+
+    return dimerAve, sample, error
+
+def save_dimerDistribute(zllist, BC, J, D, L, P, m, phys, path=None):
+    folder = creatDir(BC, J, D, L, P, m, phys)
+    name = creatName(BC, J, D, L, P, m, phys)
+    # print( f"folder[4]:{folder[4]}")
+    dimerDisBase = folder[5] + "/" + name[5]
+    context = "dimerization\n"
+    for i, value in enumerate(zllist):
+        context += f"{value}\n"
+    if context == "dimerization\n":
+        return
+    else:
+        if not os.path.exists(dimerDisBase):
+            os.makedirs(os.path.dirname(dimerDisBase), exist_ok=True)
+        with open(dimerDisBase, "w") as targetFile:
+            targetFile.write(context)
+
+def save_dimer(BC, J, D, L, P, m, phys, path=None):
+    dimerization, sample, error = dimerAverage(BC, J, D, L, P, m, phys, path)
+    if dimerization == False:
+        # print(f"Error: No data found for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
+        return
+    folder = creatDir(BC, J, D, L, P, m, phys)
+    name = creatName(BC, J, D, L, P, m, phys)
+    # print( f"folder[4]:{folder[4]}")
+    myTarPath = folder[4] + "/" + name[4]
+
+    if not os.path.exists(myTarPath):
+        os.makedirs(os.path.dirname(myTarPath), exist_ok=True)
+    with open(myTarPath, "w") as targetFile:
+        targetFile.write(f"dimerization, sample, errorbar\n{dimerization}, {sample}, {error/math.sqrt(sample)}")    
+    # print(f"dimerization, sample, errorbar\n{dimerization}, {sample}, {error/math.sqrt(sample)} for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
 
 
 def ZLAverage(BC, J, D, L, P, m, phys):
@@ -313,7 +477,7 @@ def save_zlDistribute(zllist, BC, J, D, L, P, m, phys):
 def save_ZL(BC, J, D, L, P, m, phys):
     zlAve, sample, error = ZLAverage(BC, J, D, L, P, m, phys)
     if zlAve == False:
-        print(f"Error: No data found for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
+        # print(f"Error: No data found for {BC}, {J}, {D}, {L}, {P}, {m}, {phys}")
         return
     folder = creatDir(BC, J, D, L, P, m, phys)
     name = creatName(BC, J, D, L, P, m, phys)
@@ -336,31 +500,49 @@ def list_txt_files(directory):
     return txt_files
 
 if __name__ == "__main__":
-    file = sys.argv[1]
+    # file = sys.argv[1]
     arg = []
-    a = scriptCreator.para("read",file)
-    parameterlist = a.para
-    para=scriptCreator.paraList1(parameterlist["L"],parameterlist["J"],parameterlist["D"],parameterlist["S"])
-    BC = parameterlist["BC"]
-    Pdis = parameterlist["Pdis"]
-    chi = "m" + str(parameterlist["chi"])
-    s1 = int(sys.argv[2])
-    s2 = int(sys.argv[3])
-    if BC == "PBC":
-        s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
-        # s_list = ["corr1","corr2"]
-    else:
-        s_list = ["ZL","corr1","corr2","J_list","energy","dimerization","w_loc","seed"]
+    # a = scriptCreator.para("read",file)
+    # parameterlist = a.para
+    # para=scriptCreator.paraList1(parameterlist["L"],parameterlist["J"],parameterlist["D"],parameterlist["S"])
+    
+    Jstr = [f"Jdis{str(i).zfill(3)}" for i in range(10,11,10)]
+
+    Dstr = [f"Dim{str(i).zfill(3)}" for i in range(101)]
+    # Lstr = [f"L{num}" for num in range(31, 255, 32)]  # 只有 L512
+    Lstr =  [f"L{num}" for num in range(64, 520, 64)]  # 只有 L512
+    # [f"L{num}" for num in range(8, 65, 8)] +
+    # BC = parameterlist["BC"]
+    # Pdis = parameterlist["Pdis"]
+    BC = "OBC"
+    Pdis = 10
+    chi = "m40"
+    # chi = "m" + str(parameterlist["chi"])
+    # s1 = int(sys.argv[2])
+    # s2 = int(sys.argv[3])
+    # if BC == "PBC":
+    #     s_list = ["ZL","corr1","corr2","string","J_list","energy","dimerization","w_loc","seed"]
+    #     # s_list = ["corr1","corr2"]
+    # else:
+    #     s_list = ["ZL","corr1","corr2","J_list","energy","dimerization","w_loc","seed"]
         # s_list = ["corr1","corr2"]
         
     # for s in s_list:
-    for D in para.D_str:
-        for L in para.L_str:
-            for J in para.J_str:
-                save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr1")    
-                save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr2")
-                save_gap(BC, J, D, L, f"P{Pdis}", f"{chi}", "energy")   
-                save_ZL(BC, J, D, L, f"P{Pdis}", f"{chi}", "ZL")   
+    # for D in para.D_str:
+    #     for L in para.L_str:
+    #         for J in para.J_str:
+    #             save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr1")    
+    #             save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr2")
+    #             save_gap(BC, J, D, L, f"P{Pdis}", f"{chi}", "energy")   
+    #             save_ZL(BC, J, D, L, f"P{Pdis}", f"{chi}", "ZL")   
+    # for D in Dstr:
+    D = "Dim000"
+    for L in Lstr:
+        for J in Jstr:
+            save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr1")    
+            # save_corr(BC, J, D, L, f"P{Pdis}", f"{chi}", "corr2")
+            # save_gap(BC, J, D, L, f"P{Pdis}", f"{chi}", "energy")   
+            # save_ZL(BC, J, D, L, f"P{Pdis}", f"{chi}", "ZL")   
                     # arg.append((BC, J, para.D_str[0], L, f"P{Pdis}", f"{chi}", s, s1, s2))
     # 參數設定
     # D_i, D_f, D_d = 1, 80, 1
